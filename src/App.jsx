@@ -7,7 +7,7 @@ import Chat from './pages/chat';
 import Map from './pages/Map';
 import Profile from './pages/Profile';
 
-export function App() {
+export default function App() {
   const character = useStore((state) => state.character);
 
   return (
