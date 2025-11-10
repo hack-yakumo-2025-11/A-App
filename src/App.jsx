@@ -3,11 +3,11 @@ import { Box } from '@chakra-ui/react';
 import { useStore } from './store/useStore';
 import Onboarding from './pages/Onboarding';
 import Home from './pages/Home';
-import Chat from './pages/Chat';
+import Chat from './pages/chat';
 import Map from './pages/Map';
 import Profile from './pages/Profile';
 
-function App() {
+export function App() {
   const character = useStore((state) => state.character);
 
   return (
