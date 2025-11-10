@@ -15,7 +15,7 @@ import {
   HStack,
 } from '@chakra-ui/react';
 import { motion } from 'framer-motion';
-import { useStore } from '../useStore';
+import { useStore } from '../store/useStore';
 
 const MotionBox = motion(Box);
 
