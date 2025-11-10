@@ -1,0 +1,35 @@
+{
+  "name": "nakamago",
+  "version": "1.0.0",
+  "description": "Team-A app",
+  "homepage": "https://github.com/hack-yakumo-2025-11/A-App#readme",
+  "bugs": {
+    "url": "https://github.com/hack-yakumo-2025-11/A-App/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hack-yakumo-2025-11/A-App.git"
+  },
+  "license": "ISC",
+  "author": "",
+  "type": "commonjs",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "@chakra-ui/react": "^3.29.0",
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.1",
+    "@vis.gl/react-google-maps": "^1.7.1",
+    "axios": "^1.13.2",
+    "date-fns": "^4.1.0",
+    "firebase": "^12.5.0",
+    "framer-motion": "^12.23.24",
+    "openai": "^6.8.1",
+    "react-icons": "^5.5.0",
+    "react-router-dom": "^7.9.5",
+    "uuid": "^13.0.0",
+    "zustand": "^5.0.8"
+  }
+}
