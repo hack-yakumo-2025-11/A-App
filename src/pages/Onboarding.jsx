@@ -63,16 +63,25 @@ export default function Onboarding() {
       return;
     }
 
-    setUser({ name: userName });
+    // Save user data
+    setUser({ 
+      name: userName,
+      createdAt: new Date().toISOString()
+    });
+
+    // Save character data with all necessary properties
     setCharacter({
       name: characterName,
       personality,
       fandoms: selectedFandoms,
+      emotion: 'happy',
+      level: 1,
+      createdAt: new Date().toISOString()
     });
 
     toast({
       title: `Welcome, ${userName}! 🎉`,
-      description: `${characterName} is excited to explore with you!@`,
+      description: `${characterName} is excited to explore with you!`,
       status: 'success',
       duration: 3000,
     });
