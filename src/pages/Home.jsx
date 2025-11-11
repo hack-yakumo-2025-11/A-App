@@ -26,29 +26,34 @@ export default function Home() {
   const xpProgress = (xp % 100);
 
   return (
-    <Box minH="100vh" bg="gray.50">
+    <Box minH="100vh" bg="gray.50" pb={32}>
       <Container maxW="container.sm" py={8}>
         <VStack spacing={6}>
+          {/* Welcome Header */}
           <Box textAlign="center">
             <Text color="gray.600">Welcome back,</Text>
             <Heading size="xl" color="brand.600">
-              {user?.name}! 👋
+              {user?.name || 'Traveler'}! 👋
             </Heading>
           </Box>
 
+          {/* Character Display - NO PERSONALITY PROP */}
           <Box bg="white" borderRadius="2xl" p={6} w="100%" boxShadow="md">
             <Character
-              name={character?.name}
-              emotion="happy"
-              message="Ready for an adventure today? 🌸"
+              name={character?.name || 'Yuki'}
+              emotion={character?.emotion || 'happy'}
+              message=""
             />
           </Box>
 
+          {/* Level Progress */}
           <Box bg="white" borderRadius="2xl" p={6} w="100%" boxShadow="md">
             <VStack spacing={4} align="stretch">
               <HStack justify="space-between">
-                <Text fontWeight="bold">Level {level}</Text>
-                <Badge colorScheme="brand">{xpProgress}/{xpForNextLevel} XP</Badge>
+                <Text fontWeight="bold" fontSize="lg">Level {level}</Text>
+                <Badge colorScheme="brand" fontSize="sm">
+                  {xpProgress}/{xpForNextLevel} XP
+                </Badge>
               </HStack>
               <Progress
                 value={xpProgress}
@@ -56,6 +61,8 @@ export default function Home() {
                 colorScheme="brand"
                 borderRadius="full"
                 size="sm"
+                hasStripe
+                isAnimated
               />
               <Text fontSize="sm" color="gray.600">
                 📍 Visited {visitedLocations.length} locations
@@ -63,6 +70,7 @@ export default function Home() {
             </VStack>
           </Box>
 
+          {/* Action Buttons */}
           <VStack spacing={3} w="100%">
             <Button
               leftIcon={<MdChat />}
@@ -71,7 +79,7 @@ export default function Home() {
               colorScheme="brand"
               onClick={() => navigate('/chat')}
             >
-              Chat with {character?.name}
+              Chat with {character?.name || 'Your Companion'}
             </Button>
             <Button
               leftIcon={<MdMap />}
