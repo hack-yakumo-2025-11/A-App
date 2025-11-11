@@ -1,11 +1,34 @@
-import { Box, Text, VStack } from '@chakra-ui/react';
+import { Box, Text, VStack, Avatar } from '@chakra-ui/react';
 import { motion } from 'framer-motion';
 import { useState, useEffect } from 'react';
-import { CharacterEmoji } from './CharacterEmoji';
 
 const MotionBox = motion(Box);
 
-export function Character({ emotion = 'happy', message, name = 'Yuki' }) {
+// Personality to emoji mapping
+const getPersonalityEmoji = (emotion) => {
+  const emojiMap = {
+    happy: '😊',
+    cheerful: '😊',
+    energetic: '⚡',
+    cool: '😎',
+    shy: '🥺',
+    excited: '🤩',
+  };
+  return emojiMap[emotion] || '😊';
+};
+
+// Get personality color
+const getPersonalityColor = (personality) => {
+  const colorMap = {
+    cheerful: 'pink',
+    energetic: 'orange',
+    cool: 'blue',
+    shy: 'purple',
+  };
+  return colorMap[personality] || 'pink';
+};
+
+export function Character({ emotion = 'happy', message, name = 'Yuki', personality }) {
   const [displayedMessage, setDisplayedMessage] = useState('');
   const [isTyping, setIsTyping] = useState(false);
 
@@ -32,8 +55,12 @@ export function Character({ emotion = 'happy', message, name = 'Yuki' }) {
     return () => clearInterval(interval);
   }, [message]);
 
+  const displayEmotion = emotion || personality || 'happy';
+  const colorScheme = getPersonalityColor(personality || 'cheerful');
+
   return (
     <VStack spacing={4} py={6} position="relative">
+      {/* Floating Character Avatar */}
       <MotionBox
         animate={{
           y: [0, -12, 0],
@@ -44,9 +71,33 @@ export function Character({ emotion = 'happy', message, name = 'Yuki' }) {
           ease: 'easeInOut',
         }}
       >
-        <CharacterEmoji emotion={emotion} size="120px" />
+        <Avatar
+          size="2xl"
+          name={name}
+          bg={`${colorScheme}.400`}
+          boxShadow="xl"
+        >
+          <Text fontSize="4xl">
+            {getPersonalityEmoji(displayEmotion)}
+          </Text>
+        </Avatar>
       </MotionBox>
 
+      {/* Character Name Badge */}
+      <Box
+        bg={`${colorScheme}.500`}
+        color="white"
+        px={4}
+        py={1}
+        borderRadius="full"
+        fontSize="sm"
+        fontWeight="bold"
+        boxShadow="md"
+      >
+        {name}
+      </Box>
+
+      {/* Message Bubble - ONLY SHOW IF MESSAGE EXISTS */}
       {message && (
         <MotionBox
           initial={{ opacity: 0, scale: 0.8, y: 20 }}
@@ -71,29 +122,16 @@ export function Character({ emotion = 'happy', message, name = 'Yuki' }) {
             borderBottom: '10px solid white',
           }}
         >
-          <Text fontSize="md" lineHeight="tall">
+          <Text fontSize="md" lineHeight="tall" color="gray.700">
             {displayedMessage}
             {isTyping && (
-              <Text as="span" className="typing-indicator">
+              <Text as="span" ml={1}>
                 ▌
               </Text>
             )}
           </Text>
         </MotionBox>
       )}
-
-      <Box
-        bg="brand.500"
-        color="white"
-        px={4}
-        py={1}
-        borderRadius="full"
-        fontSize="sm"
-        fontWeight="bold"
-        boxShadow="md"
-      >
-        {name}
-      </Box>
     </VStack>
   );
 }
