@@ -15,6 +15,7 @@ import {
 import { MdSearch } from 'react-icons/md';
 import { useStore } from '../store/useStore';
 import { LocationCard } from './LocationCard';
+import { SearchInput } from './SearchInput';
 
 export function LocationList() {
   const locations = useStore((state) => state.locations);
@@ -70,17 +71,10 @@ export function LocationList() {
         </HStack>
 
         {/* Search */}
-        <InputGroup>
-          <InputLeftElement pointerEvents="none">
-            <MdSearch color="gray" />
-          </InputLeftElement>
-          <Input
-            placeholder="Search locations or anime..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
-        </InputGroup>
-
+        <SearchInput 
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)} 
+        ></SearchInput>
         {/* Filter */}
         <Select value={filter} onChange={(e) => setFilter(e.target.value)}>
           <option value="all">All Locations</option>
