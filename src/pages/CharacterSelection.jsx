@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Box,
@@ -6,17 +7,23 @@ import {
   SimpleGrid,
   VStack,
   Text,
-  Avatar,
+  Image,
   Badge,
   Button,
   useToast,
   HStack,
+  Tabs,
+  TabList,
+  Tab,
+  TabPanels,
+  TabPanel,
 } from '@chakra-ui/react';
 import { CheckCircleIcon, ArrowBackIcon } from '@chakra-ui/icons';
 import { useStore } from '../store/useStore';
 import { CHARACTER_PERSONALITIES } from '../services/openaiService';
+import { getCharacterImage } from '../utils/characterAssets';
 
-export const CHARACTERS_MAIN = [
+const CHARACTERS = [
   {
     id: 'character_001',
     name: 'Sakura',
@@ -43,6 +50,8 @@ export const CHARACTERS_MAIN = [
   },
 ];
 
+const EMOTIONS = ['default', 'happy', 'thinking', 'excited', 'sad'];
+
 export default function CharacterSelection() {
   const navigate = useNavigate();
   const toast = useToast();
@@ -50,9 +59,11 @@ export default function CharacterSelection() {
   const setSelectedCharacter = useStore((state) => state.setSelectedCharacter);
   const clearConversationHistory = useStore((state) => state.clearConversationHistory);
 
+  const [previewEmotion, setPreviewEmotion] = useState('default');
+
   const handleSelectCharacter = (characterId) => {
     setSelectedCharacter(characterId);
-    clearConversationHistory(); // Clear chat history when switching
+    clearConversationHistory();
     
     const characterInfo = CHARACTER_PERSONALITIES[characterId];
     toast({
@@ -79,23 +90,21 @@ export default function CharacterSelection() {
                 Back
               </Button>
             </HStack>
-            <Heading size="xl">Choose Your Guide</Heading>
+            <Heading size="xl">Choose Your AI Guide</Heading>
             <Text color="gray.600" textAlign="center">
-              Select the anime character who will accompany you on your pilgrimage
+              Select your anime companion with multiple emotions
             </Text>
           </VStack>
 
           {/* Character Grid */}
           <SimpleGrid columns={{ base: 1, md: 3 }} spacing={6} w="full">
-            {CHARACTERS_MAIN.map((char) => {
-              const characterInfo = CHARACTER_PERSONALITIES[char.id];
+            {CHARACTERS.map((char) => {
               const isSelected = selectedCharacterId === char.id;
 
               return (
                 <Box
                   key={char.id}
                   position="relative"
-                  p={6}
                   bg="white"
                   borderRadius="xl"
                   boxShadow="md"
@@ -104,6 +113,7 @@ export default function CharacterSelection() {
                   cursor="pointer"
                   onClick={() => handleSelectCharacter(char.id)}
                   transition="all 0.3s"
+                  overflow="hidden"
                   _hover={{
                     transform: 'translateY(-4px)',
                     boxShadow: 'xl',
@@ -117,31 +127,58 @@ export default function CharacterSelection() {
                       right={4}
                       color={`${char.color}.400`}
                       boxSize={6}
+                      zIndex={2}
                     />
                   )}
 
-                  <VStack spacing={4}>
-                    {/* Character Avatar */}
-                    <Avatar
-                      size="2xl"
-                      name={char.name}
-                      bg={`${char.color}.400`}
-                      color="white"
+                  {/* Character Image Preview with Emotion Tabs */}
+                  <Box bg={`${char.color}.50`}>
+                    <Tabs
+                      size="sm"
+                      variant="soft-rounded"
+                      colorScheme={char.color}
+                      onChange={(index) => setPreviewEmotion(EMOTIONS[index])}
                     >
-                      <Text fontSize="4xl">{characterInfo.avatar}</Text>
-                    </Avatar>
+                      <TabList justifyContent="center" p={2}>
+                        {EMOTIONS.map((emotion) => (
+                          <Tab key={emotion} fontSize="xs">
+                            {emotion === 'default' && '😊'}
+                            {emotion === 'happy' && '😄'}
+                            {emotion === 'thinking' && '🤔'}
+                            {emotion === 'excited' && '🎉'}
+                            {emotion === 'sad' && '😢'}
+                          </Tab>
+                        ))}
+                      </TabList>
 
-                    {/* Character Info */}
-                    <VStack spacing={2}>
-                      <Heading size="md" color={`${char.color}.600`}>
-                        {char.name}
-                      </Heading>
-                      <Badge colorScheme={char.color} fontSize="xs">
-                        {char.description}
-                      </Badge>
-                    </VStack>
+                      <Box
+                        h="280px"
+                        display="flex"
+                        alignItems="center"
+                        justifyContent="center"
+                        p={4}
+                      >
+                        <Image
+                          src={getCharacterImage(char.id, previewEmotion)}
+                          alt={`${char.name} - ${previewEmotion}`}
+                          maxH="100%"
+                          maxW="100%"
+                          objectFit="contain"
+                          transition="all 0.3s"
+                        />
+                      </Box>
+                    </Tabs>
+                  </Box>
 
-                    {/* Personality Description */}
+                  {/* Character Info */}
+                  <VStack spacing={3} p={6}>
+                    <Heading size="md" color={`${char.color}.600`}>
+                      {char.name}
+                    </Heading>
+                    <Badge colorScheme={char.color} fontSize="xs">
+                      {char.description}
+                    </Badge>
+
                     <Box
                       bg={`${char.color}.50`}
                       p={3}
@@ -153,14 +190,6 @@ export default function CharacterSelection() {
                       </Text>
                     </Box>
 
-                    {/* Premium Badge */}
-                    {char.isPremium && (
-                      <Badge colorScheme="yellow" fontSize="sm">
-                        👑 Premium
-                      </Badge>
-                    )}
-
-                    {/* Example Message */}
                     <Box
                       bg="gray.50"
                       p={3}
@@ -171,7 +200,7 @@ export default function CharacterSelection() {
                     >
                       <Text fontSize="xs" color="gray.600" fontStyle="italic">
                         {char.id === 'character_001' && '"Sugoi! Let\'s explore, ne~! 🌸"'}
-                        {char.id === 'character_002' && '"I can guide you to authentic anime locations."'}
+                        {char.id === 'character_002' && '"I can guide you to authentic locations."'}
                         {char.id === 'character_003' && '"Ara ara~ Ready for an adventure? ⛩️"'}
                       </Text>
                     </Box>
@@ -181,7 +210,6 @@ export default function CharacterSelection() {
             })}
           </SimpleGrid>
 
-          {/* Action Buttons */}
           <HStack spacing={4} w="full" justify="center">
             <Button
               size="lg"

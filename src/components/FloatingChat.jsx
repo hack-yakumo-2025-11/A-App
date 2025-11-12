@@ -8,21 +8,25 @@ import {
   Text,
   VStack,
   HStack,
-  Avatar,
+  Image,
   Spinner,
   Collapse,
   useToast,
 } from '@chakra-ui/react';
 import { ChevronDownIcon, ChevronUpIcon } from '@chakra-ui/icons';
 import { FiSend } from 'react-icons/fi';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useStore } from '../store/useStore';
 import { sendMessageToCharacter, getCharacterInfo } from '../services/openaiService';
+import { getCharacterImage, detectEmotionFromText } from '../utils/characterAssets';
+
+const MotionBox = motion(Box);
+const MotionImage = motion(Image);
 
 export default function FloatingChat() {
   const navigate = useNavigate();
   const toast = useToast();
   
-  // CORRECT ZUSTAND USAGE - Individual selectors
   const selectedCharacterId = useStore((state) => state.selectedCharacterId);
   const conversationHistory = useStore((state) => state.conversationHistory);
   const addToConversationHistory = useStore((state) => state.addToConversationHistory);
@@ -32,6 +36,7 @@ export default function FloatingChat() {
   const [messages, setMessages] = useState([]);
   const [inputText, setInputText] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [currentEmotion, setCurrentEmotion] = useState('default');
   const messagesEndRef = useRef(null);
   const character = getCharacterInfo(selectedCharacterId);
 
@@ -43,6 +48,7 @@ export default function FloatingChat() {
       isUser: false,
       timestamp: new Date(),
     }]);
+    setCurrentEmotion('happy');
   }, [selectedCharacterId, character.name]);
 
   // Auto-scroll to bottom
@@ -63,8 +69,8 @@ export default function FloatingChat() {
     setMessages(prev => [...prev, userMessage]);
     setInputText('');
     setIsLoading(true);
+    setCurrentEmotion('thinking'); // Show thinking emotion
 
-    // Add to history
     addToConversationHistory({ role: 'user', content: inputText });
 
     try {
@@ -73,6 +79,10 @@ export default function FloatingChat() {
         selectedCharacterId,
         conversationHistory
       );
+
+      // Detect emotion from response
+      const emotion = detectEmotionFromText(response.response);
+      setCurrentEmotion(emotion);
 
       const aiMessage = {
         id: (Date.now() + 1).toString(),
@@ -86,6 +96,7 @@ export default function FloatingChat() {
 
       // Handle navigation
       if (response.navigationLocation) {
+        setCurrentEmotion('excited'); // Show excited emotion
         setTimeout(() => {
           navigate('/map', { 
             state: { searchLocation: response.navigationLocation }
@@ -102,6 +113,7 @@ export default function FloatingChat() {
 
     } catch (error) {
       console.error('FloatingChat error:', error);
+      setCurrentEmotion('sad');
       const errorMessage = {
         id: (Date.now() + 1).toString(),
         text: "Gomen! I'm having trouble connecting right now. Please try again! 🙏",
@@ -112,7 +124,7 @@ export default function FloatingChat() {
       
       toast({
         title: 'Connection Error',
-        description: 'Please check your API keys in .env',
+        description: 'Please check your API keys',
         status: 'error',
         duration: 3000,
         isClosable: true,
@@ -135,14 +147,14 @@ export default function FloatingChat() {
       bottom="0"
       right={{ base: '0', md: '20px' }}
       left={{ base: '0', md: 'auto' }}
-      width={{ base: '100%', md: '400px' }}
+      width={{ base: '100%', md: '420px' }}
       bg="white"
       boxShadow="2xl"
       borderTopRadius="xl"
       zIndex="9999"
       transition="all 0.3s ease"
     >
-      {/* Header */}
+      {/* Header with Character DP */}
       <Flex
         p={4}
         bg="pink.400"
@@ -153,16 +165,26 @@ export default function FloatingChat() {
         onClick={toggleChatMinimized}
         _hover={{ bg: 'pink.500' }}
       >
-        <HStack>
-          <Avatar
-            size="sm"
-            name={character.name}
-            bg="pink.600"
+        <HStack spacing={3}>
+          {/* Character Display Picture */}
+          <Box
+            boxSize="50px"
+            borderRadius="full"
+            overflow="hidden"
+            bg="white"
+            border="3px solid white"
+            boxShadow="lg"
           >
-            <Text fontSize="xl">{character.avatar}</Text>
-          </Avatar>
+            <Image
+              src={getCharacterImage(selectedCharacterId, 'default')}
+              alt={character.name}
+              boxSize="100%"
+              objectFit="cover"
+              fallbackSrc="https://via.placeholder.com/50"
+            />
+          </Box>
           <VStack align="start" spacing={0}>
-            <Text color="white" fontWeight="bold" fontSize="sm">
+            <Text color="white" fontWeight="bold" fontSize="md">
               {character.name}
             </Text>
             <Text color="whiteAlpha.900" fontSize="xs">
@@ -181,6 +203,7 @@ export default function FloatingChat() {
 
       {/* Chat Body */}
       <Collapse in={!isChatMinimized} animateOpacity>
+        {/* Messages Area */}
         <VStack
           height="400px"
           overflowY="auto"
@@ -222,26 +245,72 @@ export default function FloatingChat() {
           <div ref={messagesEndRef} />
         </VStack>
 
+        {/* Large Character Image - Bottom Right Corner */}
+        <Box
+          position="absolute"
+          bottom="70px"
+          right="15px"
+          zIndex={1000}
+          pointerEvents="none"
+        >
+          <AnimatePresence mode="wait">
+            <MotionBox
+              key={currentEmotion}
+              initial={{ opacity: 0, scale: 0.3, x: 50, y: 50 }}
+              animate={{ opacity: 1, scale: 1, x: 0, y: 0 }}
+              exit={{ opacity: 0, scale: 0.3, x: 50, y: 50 }}
+              transition={{ 
+                duration: 0.4,
+                type: "spring",
+                stiffness: 200,
+                damping: 20
+              }}
+            >
+              <MotionImage
+                src={getCharacterImage(selectedCharacterId, currentEmotion)}
+                alt={`${character.name} - ${currentEmotion}`}
+                height="180px"
+                width="auto"
+                objectFit="contain"
+                filter="drop-shadow(0 8px 16px rgba(0,0,0,0.3))"
+                animate={{
+                  y: [0, -10, 0],
+                }}
+                transition={{
+                  duration: 2.5,
+                  repeat: Infinity,
+                  ease: 'easeInOut',
+                }}
+              />
+            </MotionBox>
+          </AnimatePresence>
+        </Box>
+
         {/* Input Area */}
-        <Flex p={3} bg="white" borderTop="1px" borderColor="gray.200">
-          <Input
-            value={inputText}
-            onChange={(e) => setInputText(e.target.value)}
-            onKeyPress={handleKeyPress}
-            placeholder="Ask about anime locations..."
-            mr={2}
-            borderRadius="full"
-            disabled={isLoading}
-          />
-          <IconButton
-            icon={<FiSend />}
-            colorScheme="pink"
-            borderRadius="full"
-            onClick={handleSendMessage}
-            isDisabled={!inputText.trim() || isLoading}
-            aria-label="Send message"
-          />
-        </Flex>
+        <Box position="relative" bg="white" borderTop="1px" borderColor="gray.200">
+          <Flex p={3} align="center">
+            <Input
+              value={inputText}
+              onChange={(e) => setInputText(e.target.value)}
+              onKeyPress={handleKeyPress}
+              placeholder="Ask about anime locations..."
+              mr={2}
+              borderRadius="full"
+              disabled={isLoading}
+              bg="gray.50"
+              size="md"
+            />
+            <IconButton
+              icon={<FiSend />}
+              colorScheme="pink"
+              borderRadius="full"
+              onClick={handleSendMessage}
+              isDisabled={!inputText.trim() || isLoading}
+              aria-label="Send message"
+              size="md"
+            />
+          </Flex>
+        </Box>
       </Collapse>
     </Box>
   );
@@ -252,7 +321,7 @@ function ChatBubble({ message, isUser, timestamp }) {
   return (
     <Flex
       alignSelf={isUser ? 'flex-end' : 'flex-start'}
-      maxW="85%"
+      maxW="70%"
       flexDirection="column"
     >
       <Box

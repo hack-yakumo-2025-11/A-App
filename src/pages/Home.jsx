@@ -9,13 +9,14 @@ import {
   Progress,
   HStack,
   Badge,
-  Avatar,
+  Image,
   Flex,
 } from '@chakra-ui/react';
 import { MdChat, MdMap, MdPerson, MdSwapHoriz } from 'react-icons/md';
 import { useStore } from '../store/useStore';
 import { Character } from '../components/Character';
 import { CHARACTER_PERSONALITIES } from '../services/openaiService';
+import { getCharacterImage } from '../utils/characterAssets';
 
 export default function Home() {
   const navigate = useNavigate();
@@ -30,7 +31,7 @@ export default function Home() {
   const xpProgress = (xp % 100);
 
   // Get current AI guide info
-  const currentAIGuide = CHARACTER_PERSONALITIES[selectedCharacterId ?? 0];
+  const currentAIGuide = CHARACTER_PERSONALITIES[selectedCharacterId] || CHARACTER_PERSONALITIES['character_001'];
 
   return (
     <Box minH="100vh" bg="gray.50" pb={32}>
@@ -56,13 +57,22 @@ export default function Home() {
           >
             <HStack justify="space-between" align="center">
               <HStack spacing={3}>
-                <Avatar
-                  size="md"
-                  name={currentAIGuide.name}
-                  bg={`${currentAIGuide.color}.400`}
+                {/* Character Image instead of Avatar */}
+                <Box
+                  boxSize="60px"
+                  borderRadius="full"
+                  overflow="hidden"
+                  border="3px solid"
+                  borderColor="pink.300"
+                  bg="white"
                 >
-                  <Text fontSize="2xl">{currentAIGuide.avatar}</Text>
-                </Avatar>
+                  <Image
+                    src={getCharacterImage(selectedCharacterId, 'happy')}
+                    alt={currentAIGuide.name}
+                    boxSize="100%"
+                    objectFit="cover"
+                  />
+                </Box>
                 <VStack align="start" spacing={0}>
                   <Text fontWeight="bold" fontSize="md">
                     Your AI Guide: {currentAIGuide.name}
@@ -87,9 +97,9 @@ export default function Home() {
           {/* Character Display */}
           <Box bg="white" borderRadius="2xl" p={6} w="100%" boxShadow="md">
             <Character
-              name={currentAIGuide?.name || 'Yuki'}
-              emotion={currentAIGuide?.avatar || 'happy'}
-              personality={currentAIGuide?.personality}
+              name={character?.name || 'Yuki'}
+              emotion="happy"
+              personality={character?.personality}
               message="Ready for an adventure today? 🌸"
             />
           </Box>
