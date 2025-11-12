@@ -7,6 +7,7 @@ import Chat from './pages/chat';
 import Map from './pages/Map';
 import Profile from './pages/Profile';
 import FloatingChat from './components/FloatingChat';
+import CharacterSelection from './pages/CharacterSelection';
 
 export default function App() {
   const character = useStore((state) => state.character);
@@ -20,6 +21,10 @@ export default function App() {
           <Route 
             path="/" 
             element={character ? <Navigate to="/home" /> : <Onboarding />} 
+          />
+          <Route 
+            path="/character-selection" 
+            element={character ? <CharacterSelection /> : <Navigate to="/" />} 
           />
           <Route 
             path="/home" 

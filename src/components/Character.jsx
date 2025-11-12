@@ -78,7 +78,7 @@ export function Character({ emotion = 'happy', message, name = 'Yuki', personali
           boxShadow="xl"
         >
           <Text fontSize="4xl">
-            {getPersonalityEmoji(displayEmotion)}
+            {emotion}
           </Text>
         </Avatar>
       </MotionBox>
