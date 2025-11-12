@@ -12,7 +12,7 @@ import {
   Image,
   Flex,
 } from '@chakra-ui/react';
-import { MdChat, MdMap, MdPerson, MdSwapHoriz } from 'react-icons/md';
+import { MdChat, MdLogout, MdMap, MdPerson, MdSwapHoriz } from 'react-icons/md';
 import { useStore } from '../store/useStore';
 import { Character } from '../components/Character';
 import { CHARACTER_PERSONALITIES } from '../services/openaiService';
@@ -20,19 +20,18 @@ import { getCharacterImage } from '../utils/characterAssets';
 
 export default function Home() {
   const navigate = useNavigate();
-  const character = useStore((state) => state.character);
   const user = useStore((state) => state.user);
-  const level = useStore((state) => state.level);
-  const xp = useStore((state) => state.xp);
+  const level = user.level;
+  const xp = user.xp;
   const visitedLocations = useStore((state) => state.visitedLocations);
   const selectedCharacterId = useStore((state) => state.selectedCharacterId);
+  const setInitialState = useStore((state) => state.setInitialState);
 
   const xpForNextLevel = level * 100;
   const xpProgress = (xp % 100);
 
   // Get current AI guide info
   const currentAIGuide = CHARACTER_PERSONALITIES[selectedCharacterId] || CHARACTER_PERSONALITIES['character_001'];
-
   return (
     <Box minH="100vh" bg="gray.50" pb={32}>
       <Container maxW="container.sm" py={8}>
@@ -209,6 +208,16 @@ export default function Home() {
               _hover={{ bg: 'gray.100' }}
             >
               View Profile
+            </Button>
+            <Button
+              leftIcon={<MdLogout />}
+              size="lg"
+              w="100%"
+              variant="ghost"
+              onClick={() => setInitialState()}
+              _hover={{ bg: 'gray.100' }}
+            >
+              Logout
             </Button>
           </VStack>
 

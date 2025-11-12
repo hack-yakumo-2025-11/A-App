@@ -10,7 +10,7 @@ import FloatingChat from './components/FloatingChat';
 import CharacterSelection from './pages/CharacterSelection';
 
 export default function App() {
-  const character = useStore((state) => state.character);
+  const character = useStore((state) => state.user.name);
 
   console.log('App - Character:', character); // Debug log
 

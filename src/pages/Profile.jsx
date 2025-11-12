@@ -25,8 +25,8 @@ export default function Profile() {
   
   const user = useStore((state) => state.user);
   const character = useStore((state) => state.character);
-  const level = useStore((state) => state.level);
-  const xp = useStore((state) => state.xp);
+  const level = useStore((state) => state.user.level);
+  const xp = useStore((state) => state.user.xp);
   const visitedLocations = useStore((state) => state.visitedLocations);
   const locations = useStore((state) => state.locations);
   const achievements = useStore((state) => state.achievements);
@@ -99,7 +99,6 @@ export default function Profile() {
               </Text>
               <Image
                 src={getCharacterImage(selectedCharacterId, 'default')}
-                alt={character.name}
                 boxSize="100%"
                 objectFit="cover"
                 fallbackSrc="https://via.placeholder.com/50"
@@ -159,14 +158,14 @@ export default function Profile() {
                     Anime Series
                   </Text>
                 </Box>
-                <Box textAlign="center" p={4} bg="green.50" borderRadius="lg">
+                {/* <Box textAlign="center" p={4} bg="green.50" borderRadius="lg">
                   <Text fontSize="3xl" fontWeight="bold" color="green.600">
                     {achievements.length}
                   </Text>
                   <Text fontSize="sm" color="gray.600">
                     Achievements
                   </Text>
-                </Box>
+                </Box> */}
               </SimpleGrid>
             </VStack>
           </Box>
@@ -213,7 +212,7 @@ export default function Profile() {
           </Box>
 
           {/* Achievements */}
-          {achievements.length > 0 && (
+          {/* {achievements.length > 0 && (
             <Box bg="white" p={6} borderRadius="xl" w="100%" boxShadow="md">
               <VStack spacing={4} align="stretch">
                 <Heading size="md">Achievements 🏆</Heading>
@@ -243,7 +242,7 @@ export default function Profile() {
                 </SimpleGrid>
               </VStack>
             </Box>
-          )}
+          )} */}
         </VStack>
       </Container>
     </Box>

@@ -54,7 +54,7 @@ export default function Onboarding() {
   };
 
   const handleComplete = () => {
-    if (!userName || !characterName || !personality || selectedFandoms.length === 0) {
+    if (!userName || selectedFandoms.length === 0) {
       toast({
         title: 'Please complete all fields',
         status: 'warning',
@@ -64,20 +64,20 @@ export default function Onboarding() {
     }
 
     // Save user data
-    setUser({ 
-      name: userName,
-      createdAt: new Date().toISOString()
-    });
+    setUser(
+      userName
+    );
+  
 
     // Save character data with all necessary properties
-    setCharacter({
-      name: characterName,
-      personality,
-      fandoms: selectedFandoms,
-      emotion: 'happy',
-      level: 1,
-      createdAt: new Date().toISOString()
-    });
+    // setCharacter({
+    //   name: characterName,
+    //   personality,
+    //   fandoms: selectedFandoms,
+    //   emotion: 'happy',
+    //   level: 1,
+    //   createdAt: new Date().toISOString()
+    // });
 
     toast({
       title: `Welcome, ${userName}! 🎉`,

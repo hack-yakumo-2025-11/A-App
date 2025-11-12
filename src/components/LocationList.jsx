@@ -22,7 +22,7 @@ export function LocationList() {
   const visitedLocations = useStore((state) => state.visitedLocations);
   const [userPosition, setUserPosition] = useState(null);
   const [filter, setFilter] = useState('all');
-  const [searchQuery, setSearchQuery] = useState('');
+  const visitLocation = useStore((state) => state.visitLocation);
 
   useEffect(() => {
     navigator.geolocation.getCurrentPosition(
@@ -38,27 +38,24 @@ export function LocationList() {
     );
   }, []);
 
+
+  // Get unique anime names for stats
+  const getFilteredLocations = useStore((state) => state.getFilteredLocations);
+  const stateFilteredLocations = getFilteredLocations();
+  const uniqueAnime = [...new Set(locations.map((loc) => loc.anime))];
+  const visitedCount = visitedLocations.length;
+
   // Filter locations
-  const filteredLocations = locations
+  const filteredLocations = stateFilteredLocations
     .filter((loc) => {
       if (filter === 'visited') return visitedLocations.includes(loc.id);
       if (filter === 'unvisited') return !visitedLocations.includes(loc.id);
       return true;
-    })
-    .filter((loc) => {
-      if (!searchQuery) return true;
-      return (
-        loc.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        loc.anime.toLowerCase().includes(searchQuery.toLowerCase())
-      );
     });
-
-  // Get unique anime names for stats
-  const uniqueAnime = [...new Set(locations.map((loc) => loc.anime))];
-  const visitedCount = visitedLocations.length;
+    
 
   return (
-    <Container maxW="container.md" py={4}>
+    <Container maxW="container.md" py={4} overflow={'auto'}>
       <VStack spacing={6} align="stretch">
         {/* Stats */}
         <HStack spacing={4} justify="center">
@@ -70,11 +67,6 @@ export function LocationList() {
           </Badge>
         </HStack>
 
-        {/* Search */}
-        <SearchInput 
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)} 
-        ></SearchInput>
         {/* Filter */}
         <Select value={filter} onChange={(e) => setFilter(e.target.value)}>
           <option value="all">All Locations</option>
@@ -95,6 +87,7 @@ export function LocationList() {
                 location={location}
                 userPosition={userPosition}
                 isVisited={visitedLocations.includes(location.id)}
+                visitLocation={visitLocation}
               />
             ))}
           </SimpleGrid>

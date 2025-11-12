@@ -1,24 +1,43 @@
-import { useState, useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Map, Marker, InfoWindow, useMap } from '@vis.gl/react-google-maps';
-import { 
-  Box, 
-  Button, 
-  Image, 
-  Text, 
-  VStack, 
-  HStack, 
+import {
+  Box,
+  Button,
+  Image,
+  Text,
+  VStack,
+  HStack,
   Badge,
   Spinner,
   Center,
-  Container
+  Container,
+  useToast,
+  Modal,
+  ModalOverlay,
+  ModalContent,
+  ModalHeader,
+  ModalBody,
+  ModalFooter,
+  ModalCloseButton,
+  Input,
+  Textarea,
+  FormControl,
+  FormLabel,
+  useDisclosure,
+  IconButton,
+  Tooltip,
 } from '@chakra-ui/react';
-import { useNavigate } from 'react-router-dom';
+import { AddIcon, CloseIcon } from '@chakra-ui/icons';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useStore } from '../store/useStore';
 import { SearchInput } from './SearchInput';
 
-export function LocationMap({ searchLocation, isSearching }) {
+export function LocationMap() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const toast = useToast();
   const map = useMap();
+  
   const [selectedLocation, setSelectedLocation] = useState(null);
   const [userPosition, setUserPosition] = useState(null);
   const [mapCenter, setMapCenter] = useState(null);
@@ -26,10 +45,37 @@ export function LocationMap({ searchLocation, isSearching }) {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory]= useState('all');
 
+  const [isAddingLocation, setIsAddingLocation] = useState(false);
+  const [newLocationCoords, setNewLocationCoords] = useState(null);
   const searchProcessedRef = useRef(false);
   
-  const locations = useStore((state) => state.locations);
+  const { isOpen, onOpen, onClose } = useDisclosure();
+  
   const visitedLocations = useStore((state) => state.visitedLocations);
+  const visitLocation = useStore((state) => state.visitLocation);
+  const addUserLocation = useStore((state) => state.addUserLocation);
+  const currentAnimeFilter = useStore((state) => state.currentAnimeFilter);
+  const getFilteredLocations = useStore((state) => state.getFilteredLocations);
+  const clearAnimeFilter = useStore((state) => state.clearAnimeFilter);
+  
+  const filteredLocations = getFilteredLocations();
+
+  // Debug logging for filtered locations
+  useEffect(() => {
+    console.log('=== FILTER DEBUG ===');
+    console.log('Current anime filter:', currentAnimeFilter);
+    console.log('Filtered locations count:', filteredLocations.length);
+    console.log('All filtered locations:', filteredLocations.map(loc => ({ name: loc.name, anime: loc.anime })));
+  }, [currentAnimeFilter, filteredLocations]);
+
+  // Form state
+  const [formData, setFormData] = useState({
+    name: '',
+    anime: '',
+    description: '',
+    comment: '',
+    image: '',
+  });
 
   const CATEGORIES = [
   { id: 'all', name: 'All', icon: '🗺️', color: 'gray' },
@@ -39,19 +85,6 @@ export function LocationMap({ searchLocation, isSearching }) {
   { id: 'gaming', name: 'Gaming', icon: '🎮', color: 'purple' },
 ];
 
-  const filteredLocations = locations
-    .filter((loc) => {
-      if (!searchQuery) return true;
-      return (
-  
-        loc.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        loc.anime.toLowerCase().includes(searchQuery.toLowerCase())
-      );
-    })
-    .filter((loc) => {
-      if (selectedCategory === 'all') return true;
-      return loc.category === selectedCategory;
-    });
   // Get user's current location
   useEffect(() => {
     navigator.geolocation.getCurrentPosition(
@@ -65,7 +98,6 @@ export function LocationMap({ searchLocation, isSearching }) {
       },
       (error) => {
         console.log('Location access denied, using Tokyo default');
-        // Default to Tokyo center
         const defaultPos = { lat: 35.6762, lng: 139.6503 };
         setUserPosition(defaultPos);
         setMapCenter(defaultPos);
@@ -73,26 +105,70 @@ export function LocationMap({ searchLocation, isSearching }) {
     );
   }, []);
 
-  // Handle search from AI chatbot
+  // Handle search/filter from chat
   useEffect(() => {
-    if (searchLocation && map && !searchProcessedRef.current) {
+    const searchLocation = location.state?.searchLocation;
+    const filterAnime = location.state?.filterAnime;
+
+    if (filterAnime && map && !searchProcessedRef.current) {
+      searchProcessedRef.current = true;
+      
+      // Show all locations for this anime
+      const animeLocations = filteredLocations;
+      
+      if (animeLocations.length > 0) {
+        // Fit bounds to show all locations
+        const bounds = new window.google.maps.LatLngBounds();
+        animeLocations.forEach(loc => {
+          bounds.extend({ lat: loc.lat, lng: loc.lng });
+        });
+        
+        // Add padding to the bounds
+        map.fitBounds(bounds, { padding: 50 });
+        
+        // Set a slight delay to ensure map has adjusted
+        setTimeout(() => {
+          // Optionally select the first location
+          if (animeLocations.length > 0) {
+            setSelectedLocation(animeLocations[0]);
+          }
+        }, 1000);
+        
+        toast({
+          title: `🎌 Showing ${animeLocations.length} locations`,
+          description: `Displaying all ${currentAnimeFilter} locations`,
+          status: 'success',
+          duration: 4000,
+        });
+      } else {
+        toast({
+          title: 'No locations found',
+          description: `No locations found for ${currentAnimeFilter}`,
+          status: 'info',
+          duration: 3000,
+        });
+      }
+      
+      setTimeout(() => {
+        searchProcessedRef.current = false;
+      }, 3000);
+    } else if (searchLocation && map && !searchProcessedRef.current) {
       searchProcessedRef.current = true;
       searchAndNavigate(searchLocation);
       
-      // Reset flag after search is complete
       setTimeout(() => {
         searchProcessedRef.current = false;
       }, 3000);
     }
-  }, [searchLocation, map]);
+  }, [location.state, map, filteredLocations, currentAnimeFilter]);
 
-  // Search and navigate to location
   const searchAndNavigate = async (locationName) => {
-    // First, search in our existing locations
-    const foundLocation = findLocationByName(locationName);
+    const foundLocation = filteredLocations.find(loc => 
+      loc.name.toLowerCase().includes(locationName.toLowerCase()) ||
+      loc.anime.toLowerCase().includes(locationName.toLowerCase())
+    );
     
     if (foundLocation) {
-      // Animate to our location
       animateToLocation({
         lat: foundLocation.lat,
         lng: foundLocation.lng
@@ -100,7 +176,7 @@ export function LocationMap({ searchLocation, isSearching }) {
       return;
     }
 
-    // If not found, search via Google Geocoding API
+    // Fallback to Google Geocoding
     try {
       const GOOGLE_MAPS_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
       const geocodeUrl = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(locationName + ' Japan')}&key=${GOOGLE_MAPS_API_KEY}`;
@@ -117,47 +193,16 @@ export function LocationMap({ searchLocation, isSearching }) {
     }
   };
 
-  // Find location by name (fuzzy matching)
-  const findLocationByName = (searchTerm) => {
-    const lowerSearch = searchTerm.toLowerCase();
-    
-    // Try exact match first
-    let found = locations.find(loc => 
-      loc.name.toLowerCase().includes(lowerSearch) ||
-      loc.anime.toLowerCase().includes(lowerSearch)
-    );
-
-    // Try partial match with keywords
-    if (!found) {
-      found = locations.find(loc => {
-        const keywords = lowerSearch.split(' ');
-        return keywords.some(keyword => 
-          keyword.length > 2 && (
-            loc.name.toLowerCase().includes(keyword) ||
-            loc.anime.toLowerCase().includes(keyword) ||
-            loc.description.toLowerCase().includes(keyword)
-          )
-        );
-      });
-    }
-
-    return found;
-  };
-
-  // Animate map to location
   const animateToLocation = (coords, locationData = null) => {
     if (map) {
-      // Smooth pan to location
       map.panTo(coords);
       setMapCenter(coords);
       
-      // Zoom in after a short delay
       setTimeout(() => {
         map.setZoom(16);
         setMapZoom(16);
       }, 500);
 
-      // If we have location data, select it to show info window
       if (locationData) {
         setTimeout(() => {
           setSelectedLocation(locationData);
@@ -166,19 +211,27 @@ export function LocationMap({ searchLocation, isSearching }) {
     }
   };
 
-  // Calculate distance between two points (in km)
-  const calculateDistance = (lat1, lng1, lat2, lng2) => {
-    const R = 6371; // Earth's radius in km
-    const dLat = ((lat2 - lat1) * Math.PI) / 180;
-    const dLng = ((lng2 - lng1) * Math.PI) / 180;
-    const a =
-      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-      Math.cos((lat1 * Math.PI) / 180) *
-        Math.cos((lat2 * Math.PI) / 180) *
-        Math.sin(dLng / 2) *
-        Math.sin(dLng / 2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-    return (R * c).toFixed(1);
+  const handleMapClick = (event) => {
+    console.log('=== MAP CLICK DEBUG ===');
+    console.log('Event:', event);
+    console.log('Event detail:', event.detail);
+    console.log('Is adding location mode:', isAddingLocation);
+    
+    if (isAddingLocation) {
+      if (event.detail && event.detail.latLng) {
+        const coords = {
+          lat: event.detail.latLng.lat,
+          lng: event.detail.latLng.lng
+        };
+        console.log('✅ Setting new location coords:', coords);
+        setNewLocationCoords(coords);
+        onOpen();
+      } else {
+        console.log('❌ No latLng in event.detail');
+      }
+    } else {
+      console.log('ℹ️ Not in adding mode');
+    }
   };
 
   const handleNavigate = (location) => {
@@ -187,79 +240,196 @@ export function LocationMap({ searchLocation, isSearching }) {
   };
 
   const handleVisit = (location) => {
-    navigate(`/checkin/${location.id}`);
+    if (!visitedLocations.includes(location.id)) {
+      visitLocation(location.id);
+      toast({
+        title: '🎉 Location visited!',
+        description: `+${location.xpReward} XP earned`,
+        status: 'success',
+        duration: 3000,
+      });
+    } else {
+      navigate(`/checkin/${location.id}`);
+    }
+  };
+
+  const handleAddLocation = () => {
+    if (!formData.name || !formData.anime || !formData.description) {
+      toast({
+        title: '⚠️ Missing information',
+        description: 'Please fill in name, anime, and description',
+        status: 'warning',
+        duration: 3000,
+      });
+      return;
+    }
+
+    const newLocation = {
+      ...formData,
+      lat: newLocationCoords.lat,
+      lng: newLocationCoords.lng,
+      image: formData.image || 'https://images.unsplash.com/photo-1528164344705-47542687000d?w=400',
+    };
+
+    addUserLocation(newLocation);
+    
+    toast({
+      title: '✨ Location added successfully!',
+      description: 'Your location has been added to the community map',
+      status: 'success',
+      duration: 4000,
+      isClosable: true,
+    });
+
+    // Reset everything
+    setFormData({
+      name: '',
+      anime: '',
+      description: '',
+      comment: '',
+      image: '',
+    });
+    setNewLocationCoords(null);
+    setIsAddingLocation(false);
+    onClose();
+  };
+
+  const toggleAddMode = () => {
+    const newState = !isAddingLocation;
+    setIsAddingLocation(newState);
+    
+    if (newState) {
+      // Entering add mode
+      toast({
+        title: '📍 Add Location Mode Activated',
+        description: 'Click anywhere on the map to add a new anime location',
+        status: 'info',
+        duration: 4000,
+        isClosable: true,
+      });
+    } else {
+      // Exiting add mode
+      setNewLocationCoords(null);
+      toast({
+        title: 'Add Mode Cancelled',
+        description: 'You can activate it again anytime',
+        status: 'info',
+        duration: 2000,
+      });
+    }
   };
 
   if (!userPosition || !mapCenter) {
     return (
       <Box h="100%" display="flex" alignItems="center" justifyContent="center">
-        <VStack spacing={3}>
-          <Spinner size="xl" color="pink.400" thickness="4px" />
-          <Text color="gray.600">Loading map...</Text>
-        </VStack>
+        <Text>Loading map...</Text>
       </Box>
     );
   }
 
   return (
-    <Box h="100%" w="100%" position="relative">
-      <Box>
-        <SearchInput
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-        ></SearchInput>
-      </Box>
-        <Box bg="white" borderBottom="1px" borderColor="gray.200" px={4} py={3}>
-          <Container maxW="container.xl">
-            <HStack spacing={2} overflowX="auto">
-              {CATEGORIES.map(cat => (
-                <Button
-                  key={cat.id}
-                  leftIcon={<Text>{cat.icon}</Text>}
-                  size="sm"
-                  colorScheme={selectedCategory ==  cat.id  ? cat.color : 'gray'}
-                  variant={selectedCategory ==  cat.id  ? 'solid' : 'outline'}
-                  onClick={() => setSelectedCategory(cat.id)}
-                  whiteSpace="nowrap"
-                >
-                  {cat.name}
-                </Button>
-              ))}
-            </HStack>
-          </Container>
-        </Box>
-      {/* Loading indicator when searching */}
-      {isSearching && (
-        <Center
+
+    <Box h="100%" w="100%" position="relative" pointerEvents="auto">
+      {/* Filter indicator */}
+      {currentAnimeFilter && (
+        <Box
           position="absolute"
           top="20px"
           left="50%"
           transform="translateX(-50%)"
-          bg="white"
+          bg="pink.500"
+          color="white"
           px={6}
           py={3}
           borderRadius="full"
           boxShadow="lg"
-          zIndex={1000}
+          zIndex="10"
+          pointerEvents="auto"
         >
           <HStack spacing={3}>
-            <Spinner size="sm" color="pink.400" />
-            <Text fontSize="sm" fontWeight="medium" color="gray.700">
-              Searching for location...
+            <Text fontSize="sm" fontWeight="bold">
+              🎌 Showing: {currentAnimeFilter}
             </Text>
+            <IconButton
+              size="xs"
+              icon={<CloseIcon />}
+              onClick={clearAnimeFilter}
+              colorScheme="whiteAlpha"
+              aria-label="Clear filter"
+            />
           </HStack>
-        </Center>
+        </Box>
       )}
 
-      <Map
-        center={mapCenter}
-        zoom={mapZoom}
-        gestureHandling="greedy"
-        disableDefaultUI={false}
-        mapId="nakamaGo_map"
-        onCenterChanged={(e) => setMapCenter(e.detail.center)}
-        onZoomChanged={(e) => setMapZoom(e.detail.zoom)}
-      >
+      {/* Add Location Button */}
+      <Tooltip label={isAddingLocation ? "Cancel adding location" : "Add new anime location"} placement="left">
+        <IconButton
+          icon={isAddingLocation ? <CloseIcon /> : <AddIcon />}
+          position="absolute"
+          top="20px"
+          right="20px"
+          zIndex="10"
+          colorScheme={isAddingLocation ? "red" : "pink"}
+          size="lg"
+          borderRadius="full"
+          boxShadow="xl"
+          onClick={toggleAddMode}
+          aria-label="Add location"
+          pointerEvents="auto"
+          _hover={{
+            transform: 'scale(1.1)',
+            boxShadow: '2xl',
+          }}
+          transition="all 0.2s"
+        />
+      </Tooltip>
+
+      {isAddingLocation && (
+        <Box
+          position="absolute"
+          top="90px"
+          right="20px"
+          bg="pink.500"
+          color="white"
+          px={5}
+          py={3}
+          borderRadius="lg"
+          boxShadow="xl"
+          zIndex="10"
+          pointerEvents="none"
+          animation="pulse 2s infinite"
+        >
+          <VStack spacing={1} align="start">
+            <HStack>
+              <Text fontSize="lg">📍</Text>
+              <Text fontSize="sm" fontWeight="bold">
+                Add Location Mode
+              </Text>
+            </HStack>
+            <Text fontSize="xs">
+              Click anywhere on the map
+            </Text>
+          </VStack>
+        </Box>
+      )}
+
+      <Box h="100%" w="100%" position="relative" zIndex="1">
+        <Map
+          center={mapCenter}
+          zoom={mapZoom}
+          gestureHandling="greedy"
+          disableDefaultUI={false}
+          mapId="nakamaGo_map"
+          onClick={handleMapClick}
+          onCameraChanged={(e) => {
+            if (e.detail.center) {
+              setMapCenter(e.detail.center);
+            }
+            if (e.detail.zoom) {
+              setMapZoom(e.detail.zoom);
+            }
+          }}
+        >
         {/* User position marker */}
         <Marker
           position={userPosition}
@@ -277,7 +447,10 @@ export function LocationMap({ searchLocation, isSearching }) {
         {/* Location markers */}
         {filteredLocations.map((location) => {
           const isVisited = visitedLocations.includes(location.id);
-          const isSelected = selectedLocation?.id === location.id;
+          const isUserSubmitted = location.category === 'user-submitted';
+          const isInFilteredAnime = currentAnimeFilter 
+            ? location.anime.toLowerCase().includes(currentAnimeFilter.toLowerCase())
+            : true;
           
           return (
             <Marker
@@ -287,28 +460,41 @@ export function LocationMap({ searchLocation, isSearching }) {
               title={location.name}
               icon={{
                 path: window.google?.maps?.SymbolPath?.CIRCLE || 0,
-                scale: isSelected ? 14 : 10,
-                fillColor: isVisited ? '#48BB78' : '#FF6B9D',
+                scale: isInFilteredAnime && currentAnimeFilter ? 14 : (isUserSubmitted ? 8 : 10),
+                fillColor: isUserSubmitted ? '#9F7AEA' : (isVisited ? '#48BB78' : '#FF6B9D'),
                 fillOpacity: 1,
-                strokeColor: isSelected ? '#ffffff' : '#ffffff',
-                strokeWeight: isSelected ? 3 : 2,
+                strokeColor: isInFilteredAnime && currentAnimeFilter ? '#FFD700' : '#ffffff',
+                strokeWeight: isInFilteredAnime && currentAnimeFilter ? 4 : 2,
               }}
+              animation={isInFilteredAnime && currentAnimeFilter ? window.google?.maps?.Animation?.BOUNCE : null}
             />
           );
         })}
 
-        {/* Info window for selected location */}
+        {/* Temporary marker for new location */}
+        {newLocationCoords && (
+          <Marker
+            position={newLocationCoords}
+            title="New location - Click to confirm"
+            icon={{
+              path: window.google?.maps?.SymbolPath?.CIRCLE || 0,
+              scale: 15,
+              fillColor: '#FFA500',
+              fillOpacity: 0.9,
+              strokeColor: '#ffffff',
+              strokeWeight: 4,
+            }}
+            animation={window.google?.maps?.Animation?.BOUNCE}
+          />
+        )}
+
+        {/* Info window */}
         {selectedLocation && (
           <InfoWindow
             position={{ lat: selectedLocation.lat, lng: selectedLocation.lng }}
             onCloseClick={() => setSelectedLocation(null)}
-            headerContent={
-              <Text fontWeight="bold" fontSize="md" p={2}>
-                {selectedLocation.name}
-              </Text>
-            }
           >
-            <VStack align="start" spacing={3} p={2} maxW="280px">
+            <VStack align="start" spacing={2} p={2} maxW="280px">
               <Image
                 src={selectedLocation.image}
                 alt={selectedLocation.name}
@@ -327,28 +513,32 @@ export function LocationMap({ searchLocation, isSearching }) {
                     ✓ Visited
                   </Badge>
                 )}
-                <Badge colorScheme="purple" fontSize="xs">
-                  {selectedLocation.difficulty}
-                </Badge>
+                {selectedLocation.category === 'user-submitted' && (
+                  <Badge colorScheme="purple" fontSize="xs">
+                    👥 Community
+                  </Badge>
+                )}
               </HStack>
 
-              <Text fontSize="sm" color="gray.700" lineHeight="1.5">
+              <Text fontWeight="bold" fontSize="md">
+                {selectedLocation.name}
+              </Text>
+
+              <Text fontSize="sm" color="gray.700">
                 {selectedLocation.description}
               </Text>
 
-              {userPosition && (
-                <HStack spacing={1} color="pink.500" fontSize="sm">
-                  <Text>📍</Text>
-                  <Text fontWeight="medium">
-                    {calculateDistance(
-                      userPosition.lat,
-                      userPosition.lng,
-                      selectedLocation.lat,
-                      selectedLocation.lng
-                    )}{' '}
-                    km away
+              {selectedLocation.comment && (
+                <Box bg="purple.50" p={2} borderRadius="md" w="100%">
+                  <Text fontSize="xs" fontStyle="italic">
+                    "{selectedLocation.comment}"
                   </Text>
-                </HStack>
+                  {selectedLocation.submittedBy && (
+                    <Text fontSize="xs" color="gray.600" mt={1}>
+                      - {selectedLocation.submittedBy}
+                    </Text>
+                  )}
+                </Box>
               )}
 
               <HStack spacing={2} w="100%">
@@ -373,15 +563,131 @@ export function LocationMap({ searchLocation, isSearching }) {
                 </Button>
               </HStack>
 
-              <HStack justify="space-between" w="100%">
-                <Text fontSize="xs" color="gray.500">
-                  Reward: <strong>+{selectedLocation.xpReward} XP</strong>
-                </Text>
-              </HStack>
+              <Text fontSize="xs" color="gray.500">
+                Reward: +{selectedLocation.xpReward} XP
+              </Text>
             </VStack>
           </InfoWindow>
         )}
-      </Map>
+              </Map>
+      </Box>
+
+      {/* Add cursor style overlay */}
+      {isAddingLocation && (
+        <Box
+          position="absolute"
+          top="0"
+          left="0"
+          right="0"
+          bottom="0"
+          cursor="crosshair"
+          zIndex="2"
+          pointerEvents="none"
+        />
+      )}
+
+      {/* Add Location Modal */}
+      <Modal isOpen={isOpen} onClose={onClose} size="lg" isCentered>
+        <ModalOverlay backdropFilter="blur(4px)" />
+        <ModalContent>
+          <ModalHeader bg="pink.500" color="white" borderTopRadius="md">
+            <HStack spacing={2}>
+              <Text fontSize="2xl">📍</Text>
+              <Text>Add New Anime Location</Text>
+            </HStack>
+          </ModalHeader>
+          <ModalCloseButton color="white" />
+          <ModalBody py={6}>
+            <VStack spacing={4}>
+              <FormControl isRequired>
+                <FormLabel fontWeight="bold">Location Name</FormLabel>
+                <Input
+                  placeholder="e.g., Tokyo Tower, Shibuya Crossing"
+                  value={formData.name}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  size="lg"
+                />
+              </FormControl>
+
+              <FormControl isRequired>
+                <FormLabel fontWeight="bold">Anime Series/Movie</FormLabel>
+                <Input
+                  placeholder="e.g., One Piece, Naruto, Your Name"
+                  value={formData.anime}
+                  onChange={(e) => setFormData({ ...formData, anime: e.target.value })}
+                  size="lg"
+                />
+              </FormControl>
+
+              <FormControl isRequired>
+                <FormLabel fontWeight="bold">Description</FormLabel>
+                <Textarea
+                  placeholder="Describe what makes this location special and how it relates to the anime..."
+                  value={formData.description}
+                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                  rows={3}
+                  size="lg"
+                />
+              </FormControl>
+
+              <FormControl>
+                <FormLabel fontWeight="bold">Personal Comment (Optional)</FormLabel>
+                <Textarea
+                  placeholder="Share your experience visiting this place..."
+                  value={formData.comment}
+                  onChange={(e) => setFormData({ ...formData, comment: e.target.value })}
+                  rows={2}
+                />
+              </FormControl>
+
+              <FormControl>
+                <FormLabel fontWeight="bold">Image URL (Optional)</FormLabel>
+                <Input
+                  placeholder="https://example.com/image.jpg"
+                  value={formData.image}
+                  onChange={(e) => setFormData({ ...formData, image: e.target.value })}
+                />
+                <Text fontSize="xs" color="gray.500" mt={1}>
+                  Leave empty to use a default image
+                </Text>
+              </FormControl>
+              
+              {newLocationCoords && (
+                <Box w="100%" p={3} bg="gray.50" borderRadius="md">
+                  <Text fontSize="sm" color="gray.600">
+                    <strong>📌 Coordinates:</strong> {newLocationCoords.lat.toFixed(6)}, {newLocationCoords.lng.toFixed(6)}
+                  </Text>
+                </Box>
+              )}
+            </VStack>
+          </ModalBody>
+
+          <ModalFooter>
+            <Button variant="ghost" mr={3} onClick={() => {
+              onClose();
+              setNewLocationCoords(null);
+              setIsAddingLocation(false);
+              setFormData({
+                name: '',
+                anime: '',
+                description: '',
+                comment: '',
+                image: '',
+              });
+            }}>
+              Cancel
+            </Button>
+            <Button 
+              colorScheme="pink" 
+              onClick={handleAddLocation}
+              size="lg"
+              leftIcon={<Text>✨</Text>}
+            >
+              Add Location
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
     </Box>
   );
 }

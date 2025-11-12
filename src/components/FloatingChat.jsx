@@ -32,6 +32,7 @@ export default function FloatingChat() {
   const addToConversationHistory = useStore((state) => state.addToConversationHistory);
   const isChatMinimized = useStore((state) => state.isChatMinimized);
   const toggleChatMinimized = useStore((state) => state.toggleChatMinimized);
+  const setAnimeFilter = useStore((state) => state.setAnimeFilter);
 
   const [messages, setMessages] = useState([]);
   const [inputText, setInputText] = useState('');
@@ -94,9 +95,28 @@ export default function FloatingChat() {
       setMessages(prev => [...prev, aiMessage]);
       addToConversationHistory({ role: 'assistant', content: response.response });
 
-      // Handle navigation
-      if (response.navigationLocation) {
-        setCurrentEmotion('excited'); // Show excited emotion
+      // Handle filter command
+      if (response.filterAnime) {
+        setCurrentEmotion('excited');
+        setAnimeFilter(response.filterAnime);
+        
+        setTimeout(() => {
+          navigate('/map', { 
+            state: { filterAnime: response.filterAnime }
+          });
+          toast({
+            title: '🎌 Filtering locations',
+            description: `Showing all ${response.filterAnime} locations`,
+            status: 'success',
+            duration: 4000,
+            isClosable: true,
+          });
+        }, 800);
+      }
+      // Handle navigation command
+      else if (response.navigationLocation) {
+        setCurrentEmotion('excited');
+        
         setTimeout(() => {
           navigate('/map', { 
             state: { searchLocation: response.navigationLocation }
@@ -108,7 +128,7 @@ export default function FloatingChat() {
             duration: 3000,
             isClosable: true,
           });
-        }, 1000);
+        }, 800);
       }
 
     } catch (error) {
@@ -151,8 +171,9 @@ export default function FloatingChat() {
       bg="white"
       boxShadow="2xl"
       borderTopRadius="xl"
-      zIndex="9999"
+      zIndex="999"
       transition="all 0.3s ease"
+      pointerEvents="auto"
     >
       {/* Header with Character DP */}
       <Flex
@@ -250,7 +271,7 @@ export default function FloatingChat() {
           position="absolute"
           bottom="70px"
           right="15px"
-          zIndex={1000}
+          zIndex={100}
           pointerEvents="none"
         >
           <AnimatePresence mode="wait">
