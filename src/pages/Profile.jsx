@@ -13,10 +13,12 @@ import {
   SimpleGrid,
   Divider,
   Avatar,
+  Image,
 } from '@chakra-ui/react';
 import { MdArrowBack, MdLogout } from 'react-icons/md';
 import { useStore } from '../store/useStore';
 import { Character } from '../components/Character';
+import { getCharacterImage } from '../utils/characterAssets';
 
 export default function Profile() {
   const navigate = useNavigate();
@@ -29,6 +31,7 @@ export default function Profile() {
   const locations = useStore((state) => state.locations);
   const achievements = useStore((state) => state.achievements);
   const dailyMissions = useStore((state) => state.dailyMissions);
+  const selectedCharacterId = useStore((state) => state.selectedCharacterId);
 
   const xpProgress = xp % 100;
   const xpForNextLevel = 100;
@@ -94,18 +97,13 @@ export default function Profile() {
               <Text fontWeight="bold" fontSize="lg">
                 Your Companion
               </Text>
-              <Character
-                name={character?.name}
-                emotion="happy"
-                message={`We've explored ${visitedLocations.length} places together! 🌟`}
+              <Image
+                src={getCharacterImage(selectedCharacterId, 'default')}
+                alt={character.name}
+                boxSize="100%"
+                objectFit="cover"
+                fallbackSrc="https://via.placeholder.com/50"
               />
-              <HStack spacing={2}>
-                {character?.fandoms?.map((fandom) => (
-                  <Badge key={fandom} colorScheme="pink">
-                    {fandom}
-                  </Badge>
-                ))}
-              </HStack>
             </VStack>
           </Box>
 

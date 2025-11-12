@@ -9,10 +9,12 @@ import {
   HStack, 
   Badge,
   Spinner,
-  Center
+  Center,
+  Container
 } from '@chakra-ui/react';
 import { useNavigate } from 'react-router-dom';
 import { useStore } from '../store/useStore';
+import { SearchInput } from './SearchInput';
 
 export function LocationMap({ searchLocation, isSearching }) {
   const navigate = useNavigate();
@@ -21,11 +23,35 @@ export function LocationMap({ searchLocation, isSearching }) {
   const [userPosition, setUserPosition] = useState(null);
   const [mapCenter, setMapCenter] = useState(null);
   const [mapZoom, setMapZoom] = useState(12);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedCategory, setSelectedCategory]= useState('all');
+
   const searchProcessedRef = useRef(false);
   
   const locations = useStore((state) => state.locations);
   const visitedLocations = useStore((state) => state.visitedLocations);
 
+  const CATEGORIES = [
+  { id: 'all', name: 'All', icon: '🗺️', color: 'gray' },
+  { id: 'anime', name: 'Animes', icon: '🎌', color: 'red' },
+  { id: 'manga', name: 'Manga', icon: '📚', color: 'blue' },
+  { id: 'movies', name: 'Movies', icon: '🎬', color: 'green' },
+  { id: 'gaming', name: 'Gaming', icon: '🎮', color: 'purple' },
+];
+
+  const filteredLocations = locations
+    .filter((loc) => {
+      if (!searchQuery) return true;
+      return (
+  
+        loc.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        loc.anime.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+    })
+    .filter((loc) => {
+      if (selectedCategory === 'all') return true;
+      return loc.category === selectedCategory;
+    });
   // Get user's current location
   useEffect(() => {
     navigator.geolocation.getCurrentPosition(
@@ -177,6 +203,31 @@ export function LocationMap({ searchLocation, isSearching }) {
 
   return (
     <Box h="100%" w="100%" position="relative">
+      <Box>
+        <SearchInput
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+        ></SearchInput>
+      </Box>
+        <Box bg="white" borderBottom="1px" borderColor="gray.200" px={4} py={3}>
+          <Container maxW="container.xl">
+            <HStack spacing={2} overflowX="auto">
+              {CATEGORIES.map(cat => (
+                <Button
+                  key={cat.id}
+                  leftIcon={<Text>{cat.icon}</Text>}
+                  size="sm"
+                  colorScheme={selectedCategory ==  cat.id  ? cat.color : 'gray'}
+                  variant={selectedCategory ==  cat.id  ? 'solid' : 'outline'}
+                  onClick={() => setSelectedCategory(cat.id)}
+                  whiteSpace="nowrap"
+                >
+                  {cat.name}
+                </Button>
+              ))}
+            </HStack>
+          </Container>
+        </Box>
       {/* Loading indicator when searching */}
       {isSearching && (
         <Center
@@ -224,7 +275,7 @@ export function LocationMap({ searchLocation, isSearching }) {
         />
 
         {/* Location markers */}
-        {locations.map((location) => {
+        {filteredLocations.map((location) => {
           const isVisited = visitedLocations.includes(location.id);
           const isSelected = selectedLocation?.id === location.id;
           

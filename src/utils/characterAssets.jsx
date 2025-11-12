@@ -8,11 +8,11 @@ const characterAssets = {
     sad: '/src/assets/characters/sakura/sad.png',
   },
   character_002: { // Kenji
-    default: '/src/assets/characters/kenji/Main-1.png',
-    happy: '/src/assets/characters/kenji/Main-1.png',
-    thinking: '/src/assets/characters/kenji/Thinking-1.png',
-    excited: '/src/assets/characters/kenji/Cheering-1.png',
-    sad: '/src/assets/characters/kenji/Thinking-1.png',
+    default: '/src/assets/characters/kenji/default.png',
+    happy: '/src/assets/characters/kenji/happy.png',
+    thinking: '/src/assets/characters/kenji/thinking.png',
+    excited: '/src/assets/characters/kenji/excited.png',
+    sad: '/src/assets/characters/kenji/sad.png',
   },
   character_003: { // Miko
     default: '/src/assets/characters/miko/default.png',

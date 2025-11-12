@@ -96,11 +96,13 @@ export default function Home() {
 
           {/* Character Display */}
           <Box bg="white" borderRadius="2xl" p={6} w="100%" boxShadow="md">
-            <Character
-              name={character?.name || 'Yuki'}
-              emotion="happy"
-              personality={character?.personality}
-              message="Ready for an adventure today? 🌸"
+           
+            <Image
+              src={getCharacterImage(selectedCharacterId, 'default')}
+              alt={currentAIGuide.name}
+              boxSize="100%"
+              objectFit="cover"
+              fallbackSrc="https://via.placeholder.com/50"
             />
           </Box>
 
@@ -186,18 +188,6 @@ export default function Home() {
 
           {/* Action Buttons */}
           <VStack spacing={3} w="100%">
-            <Button
-              leftIcon={<MdChat />}
-              size="lg"
-              w="100%"
-              colorScheme="brand"
-              onClick={() => navigate('/chat')}
-              boxShadow="md"
-              _hover={{ transform: 'translateY(-2px)', boxShadow: 'lg' }}
-              transition="all 0.2s"
-            >
-              Chat with {character?.name || 'Your Companion'}
-            </Button>
             <Button
               leftIcon={<MdMap />}
               size="lg"

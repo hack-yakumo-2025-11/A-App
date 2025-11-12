@@ -1,3 +1,6 @@
+import { Input, InputGroup, InputLeftElement } from "@chakra-ui/react";
+import { MdSearch } from "react-icons/md";
+
 export function SearchInput({value, onChange}){
 return (
 <InputGroup>
@@ -6,8 +9,8 @@ return (
     </InputLeftElement>
     <Input
     placeholder="Search locations or anime..."
-    value={searchQuery}
-    onChange={(e) => setSearchQuery(e.target.value)}
+    value={value}
+    onChange={onChange}
     />
 </InputGroup>
 );
