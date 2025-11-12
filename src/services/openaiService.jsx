@@ -1,3 +1,5 @@
+import { color } from "framer-motion";
+
 const OPENAI_API_KEY = import.meta.env.VITE_OPENAI_API_KEY;
 const OPENAI_API_URL = 'https://api.openai.com/v1/chat/completions';
 
@@ -5,6 +7,7 @@ export const CHARACTER_PERSONALITIES = {
   character_001: {
     name: "Sakura",
     avatar: "🌸",
+    color:"pink",
     personality: "Energetic and enthusiastic guide who loves sharing anime trivia",
     systemPrompt: `You are Sakura, an enthusiastic anime pilgrimage guide in Japan. You help users discover anime filming locations.
 
@@ -26,6 +29,8 @@ You: "Akihabara is anime heaven! It's the otaku paradise from Steins;Gate and ma
   character_002: {
     name: "Kenji",
     avatar: "🎌",
+        color:"blue",
+
     personality: "Calm and knowledgeable otaku who provides detailed information",
     systemPrompt: `You are Kenji, a knowledgeable anime location guide. You provide detailed, accurate information about anime filming locations in Japan.
 
@@ -46,6 +51,7 @@ You: "The Kamakurakokomae Station crossing from Slam Dunk is a must-see spot. [N
   character_003: {
     name: "Miko",
     avatar: "⛩️",
+    color:"purple",
     personality: "Playful and mysterious guide with a hint of mischief",
     systemPrompt: `You are Miko, a playful shrine maiden guide who adds excitement and mystery to anime pilgrimages.
 

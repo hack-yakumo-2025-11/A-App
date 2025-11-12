@@ -94,6 +94,57 @@ export const useStore = create(
           difficulty: 'medium',
           category: 'anime'
         },
+       
+  
+       {
+        id: 'kinkakuji',
+        name: 'Kinkaku-ji (Golden Pavilion)',
+        anime: 'Multiple Anime',
+        lat: 35.0394,
+        lng: 135.7292,
+        description: 'The stunning Golden Pavilion in Kyoto! Featured in many anime 🏯✨',
+        image: 'https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?w=800',
+        xpReward: 200,
+        difficulty: 'hard',
+        category: 'anime'
+        },
+      {
+        id: 'tokyo-skytree',
+        name: 'Tokyo Skytree',
+        anime: 'Multiple Anime',
+        lat: 35.7101,
+        lng: 139.8107,
+        description: 'The tallest tower in Japan! Featured in Detective Conan and more! 🗼',
+        image: 'https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?w=800',
+        xpReward: 150,
+        difficulty: 'medium',
+        category: 'anime'
+      },
+      {
+        id: 'fushimi-inari',
+        name: 'Fushimi Inari Shrine',
+        anime: 'Inari Kon Kon',
+        lat: 34.9671,
+        lng: 135.7727,
+        description: 'Thousands of red torii gates! Featured in Inari Kon Kon ⛩️',
+        image: 'https://images.unsplash.com/photo-1478436127897-769e1b3f0f36?w=800',
+        xpReward: 180,
+        difficulty: 'medium',
+        category: 'anime'
+      },
+      {
+        id: 'kamakura-station',
+        name: 'Kamakurakokomae Station',
+        anime: 'Slam Dunk',
+        lat: 35.3058,
+        lng: 139.4947,
+        description: 'The iconic railroad crossing from Slam Dunk opening! 🏀',
+        image: 'https://images.unsplash.com/photo-1590559899731-a382839e5549?w=800',
+        xpReward: 150,
+        difficulty: 'medium',
+        category: 'anime'
+      },
+
       ],
 
       // Missions
