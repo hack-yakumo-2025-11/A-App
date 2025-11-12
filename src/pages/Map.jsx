@@ -7,15 +7,18 @@ import {
   Tabs, 
   TabList, 
   Tab,
-  useToast,
+  Button,
   Badge,
-  VStack
+  useDisclosure,
+  VStack,
+  useToast,
 } from '@chakra-ui/react';
-import { MdArrowBack, MdLocationOn } from 'react-icons/md';
+import { MdArrowBack, MdAddLocation, MdFilterList } from 'react-icons/md';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { LocationMap } from '../components/LocationMap';
 import { LocationList } from '../components/LocationList';
 import { useStore } from '../store/useStore';
+import AddLocationModal from '../components/AddLocationModal';
 
 export default function Map() {
   const navigate = useNavigate();
@@ -25,8 +28,14 @@ export default function Map() {
   const [tabIndex, setTabIndex] = useState(0);
   const [searchLocation, setSearchLocation] = useState(null);
   const [isSearching, setIsSearching] = useState(false);
+  const [selectedCoordinates, setSelectedCoordinates] = useState(null);
   
-  const locations = useStore((state) => state.locations);
+  const { isOpen, onOpen, onClose } = useDisclosure();
+  
+  const getFilteredLocations = useStore((state) => state.getFilteredLocations);
+  const filteredAnime = useStore((state) => state.filteredAnime);
+  const clearAnimeFilter = useStore((state) => state.clearAnimeFilter);
+  const setAnimeFilter = useStore((state) => state.setAnimeFilter);
 
   // Handle navigation from AI chatbot
   useEffect(() => {
@@ -35,7 +44,6 @@ export default function Map() {
       setSearchLocation(locationName);
       setIsSearching(true);
       
-      // Show toast notification
       toast({
         title: '🗺️ Navigating to location',
         description: `Searching for: ${locationName}`,
@@ -45,59 +53,37 @@ export default function Map() {
         position: 'top',
       });
 
-      // Search in our existing locations first
-      const foundLocation = findLocationByName(locationName);
-      
-      if (foundLocation) {
-        // Found in our database
-        toast({
-          title: '📍 Location found!',
-          description: `${foundLocation.name} from ${foundLocation.anime}`,
-          status: 'success',
-          duration: 4000,
-          isClosable: true,
-          position: 'top',
-        });
-        setTabIndex(0); // Switch to map view
-      } else {
-        // Will search via Google Maps API
-        setTabIndex(0); // Switch to map view
-      }
-
-      // Clear the search after a short delay
       setTimeout(() => {
         setIsSearching(false);
       }, 2000);
 
-      // Clear location state to prevent re-triggering
       window.history.replaceState({}, document.title);
     }
-  }, [location.state?.searchLocation]);
-
-  // Helper function to find location by name (fuzzy matching)
-  const findLocationByName = (searchTerm) => {
-    const lowerSearch = searchTerm.toLowerCase();
     
-    // Try exact match first
-    let found = locations.find(loc => 
-      loc.name.toLowerCase().includes(lowerSearch) ||
-      loc.anime.toLowerCase().includes(lowerSearch)
-    );
-
-    // Try partial match
-    if (!found) {
-      found = locations.find(loc => {
-        const keywords = lowerSearch.split(' ');
-        return keywords.some(keyword => 
-          loc.name.toLowerCase().includes(keyword) ||
-          loc.anime.toLowerCase().includes(keyword) ||
-          loc.description.toLowerCase().includes(keyword)
-        );
+    // Handle anime filter from AI chatbot
+    if (location.state?.animeFilter) {
+      const animeName = location.state.animeFilter;
+      setAnimeFilter(animeName);
+      
+      toast({
+        title: '🔍 Filtering locations',
+        description: `Showing ${animeName} locations`,
+        status: 'success',
+        duration: 3000,
+        isClosable: true,
+        position: 'top',
       });
+      
+      window.history.replaceState({}, document.title);
     }
+  }, [location.state]);
 
-    return found;
+  const handleMapClick = (coordinates) => {
+    setSelectedCoordinates(coordinates);
+    onOpen();
   };
+
+  const filteredLocations = getFilteredLocations();
 
   return (
     <Box h="100vh" display="flex" flexDirection="column">
@@ -115,21 +101,46 @@ export default function Map() {
               <Text fontWeight="bold" fontSize="lg">
                 Explore Locations 🗺️
               </Text>
-              {searchLocation && isSearching && (
-                <HStack spacing={2} mt={1}>
-                  <MdLocationOn color="#FF69B4" />
-                  <Text fontSize="sm" color="gray.600">
-                    Searching: <strong>{searchLocation}</strong>
-                  </Text>
+              {filteredAnime && (
+                <HStack spacing={2}>
+                  <Badge colorScheme="purple" fontSize="xs">
+                    Filtered: {filteredAnime}
+                  </Badge>
+                  <Button
+                    size="xs"
+                    variant="ghost"
+                    onClick={clearAnimeFilter}
+                  >
+                    Clear
+                  </Button>
                 </HStack>
               )}
             </VStack>
           </HStack>
 
-          {/* Location count badge */}
-          <Badge colorScheme="pink" fontSize="sm">
-            {locations.length} locations
-          </Badge>
+          <HStack>
+            {/* Location count */}
+            <Badge colorScheme="pink" fontSize="sm" px={2} py={1}>
+              {filteredLocations.length} locations
+            </Badge>
+            
+            {/* Add Location Button */}
+            <IconButton
+              icon={<MdAddLocation />}
+              colorScheme="pink"
+              variant="outline"
+              onClick={() => {
+                // Open modal without coordinates for now
+                toast({
+                  title: 'Tap on the map',
+                  description: 'Tap on the map where you want to add a location',
+                  status: 'info',
+                  duration: 3000,
+                });
+              }}
+              aria-label="Add location"
+            />
+          </HStack>
         </HStack>
 
         {/* Tabs */}
@@ -147,13 +158,25 @@ export default function Map() {
           <LocationMap 
             searchLocation={searchLocation} 
             isSearching={isSearching}
+            onMapClick={handleMapClick}
+            filteredLocations={filteredLocations}
           />
         ) : (
           <LocationList 
             highlightLocation={searchLocation}
+            filteredLocations={filteredLocations}
           />
         )}
       </Box>
+
+      {/* Add Location Modal */}
+      {selectedCoordinates && (
+        <AddLocationModal
+          isOpen={isOpen}
+          onClose={onClose}
+          coordinates={selectedCoordinates}
+        />
+      )}
     </Box>
   );
 }
