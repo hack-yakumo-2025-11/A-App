@@ -1397,8 +1397,6 @@ const initialState = {
       currentSearchQuery: '',
       currentSelectedCategory: 'all',
       missionsJustCompleted: [],
-      foundLocationSearchLocation: null,
-      foundLocationFilterAnime: null,
 }
 
 export const useStore = create(
@@ -1468,17 +1466,12 @@ export const useStore = create(
         conversationHistory: [...state.conversationHistory, message],
       })),
 
-      setFoundLocationSearchLocation: (location) => set({ foundLocationSearchLocation: location }),
-
-      setFoundLocationFilterAnime: (animeName) => set({ foundLocationFilterAnime: animeName }),
       
       clearConversationHistory: () => set({ conversationHistory: [] }),
       
       toggleChatMinimized: () => set((state) => ({
         isChatMinimized: !state.isChatMinimized,
       })),
-
-      
 
       // New actions for user-submitted locations
       addUserLocation: (locationData) => set((state) => {

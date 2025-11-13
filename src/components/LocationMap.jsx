@@ -206,6 +206,9 @@ export function LocationMap() {
       loc.anime.toLowerCase().includes(locationName.toLowerCase())
     );
 
+    console.log('Found location in filtered list:', foundLocation);
+    console.log('Found location in filtered list:', filteredLocations);
+
     if (foundLocation) {
       animateToLocation({
         lat: foundLocation.lat,
