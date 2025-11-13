@@ -3,13 +3,14 @@ import { Box } from '@chakra-ui/react';
 import { useStore } from './store/useStore';
 import Onboarding from './pages/Onboarding';
 import Home from './pages/Home';
-import Chat from './pages/chat';
+import Chat from './pages/Chat';
 import Map from './pages/Map';
 import Profile from './pages/Profile';
 import FloatingChat from './components/FloatingChat';
+import CharacterSelection from './pages/CharacterSelection';
 
 export default function App() {
-  const character = useStore((state) => state.character);
+  const character = useStore((state) => state.user.name);
 
   console.log('App - Character:', character); // Debug log
 
@@ -19,7 +20,11 @@ export default function App() {
         <Routes>
           <Route 
             path="/" 
-            element={character ? <Navigate to="/home" /> : <Onboarding />} 
+            element={character ? <Navigate to="/map" /> : <Onboarding />} 
+          />
+          <Route 
+            path="/character-selection" 
+            element={character ? <CharacterSelection /> : <Navigate to="/" />} 
           />
           <Route 
             path="/home" 

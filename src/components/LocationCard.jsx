@@ -1,9 +1,8 @@
 import { Box, Image, Text, Badge, Button, HStack, VStack } from '@chakra-ui/react';
 import { MdLocationOn, MdCheckCircle } from 'react-icons/md';
-import { useNavigate } from 'react-router-dom';
+import { useStore } from 'zustand';
 
-export function LocationCard({ location, userPosition, isVisited }) {
-  const navigate = useNavigate();
+export function LocationCard({ location, userPosition, isVisited, visitLocation }) {
 
   const calculateDistance = (userPos, locPos) => {
     if (!userPos) return null;
@@ -93,7 +92,7 @@ export function LocationCard({ location, userPosition, isVisited }) {
             colorScheme="brand"
             size="sm"
             flex="1"
-            onClick={() => navigate(`/checkin/${location.id}`)}
+            onClick={() => { visitLocation(location.id); }} 
             isDisabled={isVisited}
           >
             {isVisited ? 'Completed' : `Visit (+ ${location.xpReward} XP)`}

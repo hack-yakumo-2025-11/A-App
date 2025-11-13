@@ -36,7 +36,7 @@ const fandoms = [
 export default function Onboarding() {
   const navigate = useNavigate();
   const toast = useToast();
-  const setUser = useStore((state) => state.setUser);
+  const setUsername = useStore((state) => state.setUsername);
   const setCharacter = useStore((state) => state.setCharacter);
 
   const [step, setStep] = useState(1);
@@ -54,7 +54,7 @@ export default function Onboarding() {
   };
 
   const handleComplete = () => {
-    if (!userName || !characterName || !personality || selectedFandoms.length === 0) {
+    if (!userName || selectedFandoms.length === 0) {
       toast({
         title: 'Please complete all fields',
         status: 'warning',
@@ -64,20 +64,20 @@ export default function Onboarding() {
     }
 
     // Save user data
-    setUser({ 
-      name: userName,
-      createdAt: new Date().toISOString()
-    });
+    setUsername(
+      userName
+    );
+  
 
     // Save character data with all necessary properties
-    setCharacter({
-      name: characterName,
-      personality,
-      fandoms: selectedFandoms,
-      emotion: 'happy',
-      level: 1,
-      createdAt: new Date().toISOString()
-    });
+    // setCharacter({
+    //   name: characterName,
+    //   personality,
+    //   fandoms: selectedFandoms,
+    //   emotion: 'happy',
+    //   level: 1,
+    //   createdAt: new Date().toISOString()
+    // });
 
     toast({
       title: `Welcome, ${userName}! 🎉`,
@@ -148,65 +148,6 @@ export default function Onboarding() {
           )}
 
           {step === 2 && (
-            <MotionBox
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              w="100%"
-            >
-              <VStack spacing={6} bg="white" p={8} borderRadius="2xl" boxShadow="xl">
-                <Heading size="lg">Create Your Companion</Heading>
-
-                <FormControl>
-                  <FormLabel>Character Name</FormLabel>
-                  <Input
-                    placeholder="e.g., Yuki, Sakura..."
-                    size="lg"
-                    value={characterName}
-                    onChange={(e) => setCharacterName(e.target.value)}
-                  />
-                </FormControl>
-
-                <FormControl>
-                  <FormLabel>Personality</FormLabel>
-                  <SimpleGrid columns={2} spacing={3}>
-                    {personalities.map((p) => (
-                      <Box
-                        key={p.value}
-                        as="button"
-                        p={4}
-                        borderRadius="xl"
-                        borderWidth="2px"
-                        borderColor={personality === p.value ? `${p.color}.500` : 'gray.200'}
-                        bg={personality === p.value ? `${p.color}.50` : 'white'}
-                        transition="all 0.2s"
-                        onClick={() => setPersonality(p.value)}
-                        _hover={{ transform: 'scale(1.05)' }}
-                      >
-                        <Text fontSize="3xl" mb={2}>{p.emoji}</Text>
-                        <Text fontWeight="bold">{p.label}</Text>
-                      </Box>
-                    ))}
-                  </SimpleGrid>
-                </FormControl>
-
-                <HStack w="100%" spacing={3}>
-                  <Button variant="outline" onClick={() => setStep(1)} flex="1">
-                    ← Back
-                  </Button>
-                  <Button
-                    colorScheme="brand"
-                    onClick={() => setStep(3)}
-                    isDisabled={!characterName || !personality}
-                    flex="1"
-                  >
-                    Continue →
-                  </Button>
-                </HStack>
-              </VStack>
-            </MotionBox>
-          )}
-
-          {step === 3 && (
             <MotionBox
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
