@@ -37,12 +37,9 @@ export default function Onboarding() {
   const navigate = useNavigate();
   const toast = useToast();
   const setUsername = useStore((state) => state.setUsername);
-  const setCharacter = useStore((state) => state.setCharacter);
 
   const [step, setStep] = useState(1);
   const [userName, setUserName] = useState('');
-  const [characterName, setCharacterName] = useState('');
-  const [personality, setPersonality] = useState('');
   const [selectedFandoms, setSelectedFandoms] = useState([]);
 
   const toggleFandom = (fandom) => {
