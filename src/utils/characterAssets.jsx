@@ -1,25 +1,25 @@
 // Character emotion images
 const characterAssets = {
   character_001: { // Sakura
-    default: '/src/assets/characters/sakura/default.png',
-    happy: '/src/assets/characters/sakura/happy.png',
-    thinking: '/src/assets/characters/sakura/thinking.png',
-    excited: '/src/assets/characters/sakura/excited.png',
-    sad: '/src/assets/characters/sakura/sad.png',
+    default: '/characters/sakura/default.png',
+    happy: '/characters/sakura/happy.png',
+    thinking: '/characters/sakura/thinking.png',
+    excited: '/characters/sakura/excited.png',
+    sad: '/characters/sakura/sad.png',
   },
   character_002: { // Kenji
-    default: '/src/assets/characters/kenji/default.png',
-    happy: '/src/assets/characters/kenji/happy.png',
-    thinking: '/src/assets/characters/kenji/thinking.png',
-    excited: '/src/assets/characters/kenji/excited.png',
-    sad: '/src/assets/characters/kenji/sad.png',
+    default: '/characters/kenji/default.png',
+    happy: '/characters/kenji/happy.png',
+    thinking: '/characters/kenji/thinking.png',
+    excited: '/characters/kenji/excited.png',
+    sad: '/characters/kenji/sad.png',
   },
   character_003: { // Miko
-    default: '/src/assets/characters/miko/default.png',
-    happy: '/src/assets/characters/miko/happy.png',
-    thinking: '/src/assets/characters/miko/thinking.png',
-    excited: '/src/assets/characters/miko/excited.png',
-    sad: '/src/assets/characters/miko/sad.png',
+    default: '/characters/miko/default.png',
+    happy: '/characters/miko/happy.png',
+    thinking: '/characters/miko/thinking.png',
+    excited: '/characters/miko/excited.png',
+    sad: '/characters/miko/sad.png',
   },
 };
 
