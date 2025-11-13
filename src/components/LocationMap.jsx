@@ -319,6 +319,8 @@ export function LocationMap() {
     }
   };
 
+  const userName = useStore((state) => state.user.name);
+
   if (!userPosition || !mapCenter) {
     return (
       <Box h="100%" display="flex" alignItems="center" justifyContent="center">
@@ -362,7 +364,9 @@ export function LocationMap() {
       )}
 
       {/* Add Location Button */}
-      <Tooltip label={isAddingLocation ? "Cancel adding location" : "Add new anime location"} placement="left">
+      {
+        userName ?
+        <Tooltip label={isAddingLocation ? "Cancel adding location" : "Add new location"} placement="left">
         <IconButton
           icon={isAddingLocation ? <CloseIcon /> : <AddIcon />}
           position="absolute"
@@ -383,6 +387,8 @@ export function LocationMap() {
           transition="all 0.2s"
         />
       </Tooltip>
+        : ""
+      }
 
       {isAddingLocation && (
         <Box
