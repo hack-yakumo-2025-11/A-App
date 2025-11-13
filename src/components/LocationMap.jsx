@@ -58,10 +58,8 @@ export function LocationMap() {
   const currentAnimeFilter = useStore((state) => state.currentAnimeFilter);
   const getFilteredLocations = useStore((state) => state.getFilteredLocations);
   const clearAnimeFilter = useStore((state) => state.clearAnimeFilter);
-  
+
   const filteredLocations = getFilteredLocations();
-
-
 
  const fileInputRef = useRef(null);
  const handleImageChange = (e) => {
@@ -207,7 +205,10 @@ export function LocationMap() {
       loc.name.toLowerCase().includes(locationName.toLowerCase()) ||
       loc.anime.toLowerCase().includes(locationName.toLowerCase())
     );
-    
+
+    console.log('Found location in filtered list:', foundLocation);
+    console.log('Found location in filtered list:', filteredLocations);
+
     if (foundLocation) {
       animateToLocation({
         lat: foundLocation.lat,
@@ -602,15 +603,21 @@ export function LocationMap() {
                 >
                   Navigate
                 </Button>
-                <Button
-                  size="sm"
-                  colorScheme="pink"
-                  onClick={() => handleVisit(selectedLocation)}
-                  flex="1"
-                  isDisabled={visitedLocations.includes(selectedLocation.id)}
-                >
-                  {visitedLocations.includes(selectedLocation.id) ? '✓ Visited' : 'Check In'}
-                </Button>
+                {
+                  userName ?  
+                  
+                  <Button
+                    size="sm"
+                    colorScheme="pink"
+                    onClick={() => handleVisit(selectedLocation)}
+                    flex="1"
+                    isDisabled={visitedLocations.includes(selectedLocation.id)}
+                  >
+                    {visitedLocations.includes(selectedLocation.id) ? '✓ Visited' : 'Visit'}
+                  </Button>
+                  : ""
+                }
+               
               </HStack>
 
               <Text fontSize="xs" color="gray.500">

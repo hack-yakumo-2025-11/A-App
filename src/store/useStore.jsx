@@ -1389,7 +1389,6 @@ const initialState = {
       dailyMissions: [
         { id: 'mission_001', description: 'Visit 1 location', xpReward: 50, type: "visit", progress: 0, target: 1, completed: false },
         { id: 'mission_002', description: 'Submit a new location', type: "submit", progress: 0, target: 1, xpReward: 30, completed: false },
-        { id: 'mission_003', description: 'Chat with the AI guide 5 times', type:"chat", progress: 0, target: 5, xpReward: 20, completed: false },
       ],
     
       // New state for features
@@ -1466,6 +1465,7 @@ export const useStore = create(
       addToConversationHistory: (message) => set((state) => ({
         conversationHistory: [...state.conversationHistory, message],
       })),
+
       
       clearConversationHistory: () => set({ conversationHistory: [] }),
       

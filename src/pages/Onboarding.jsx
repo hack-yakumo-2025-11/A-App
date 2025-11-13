@@ -46,13 +46,6 @@ export default function Onboarding() {
   function handleSelectCharacter (characterId) {
     setSelectedCharacter(characterId);
     const characterInfo = CHARACTER_PERSONALITIES[characterId];
-    toast({
-      title: '✨ Character updated!',
-      description: `${characterInfo.name} is now your guide`,
-      status: 'success',
-      duration: 2000,
-      isClosable: true,
-    });
   };
 
   const [step, setStep] = useState(1);
