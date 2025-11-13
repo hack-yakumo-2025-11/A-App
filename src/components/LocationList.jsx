@@ -24,6 +24,7 @@ export function LocationList() {
   const [userPosition, setUserPosition] = useState(null);
   const [filter, setFilter] = useState('all');
   const visitLocation = useStore((state) => state.visitLocation);
+  const userName = useStore((state) => state.user?.name);
   const toast = useToast();
 
   useEffect(() => {
@@ -101,6 +102,7 @@ export function LocationList() {
                 userPosition={userPosition}
                 isVisited={visitedLocations.includes(location.id)}
                 visitLocation={handleVisitLocation}
+                isLoggedIn={userName}
               />
             ))}
           </SimpleGrid>

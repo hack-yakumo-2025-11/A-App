@@ -2,7 +2,7 @@ import { Box, Image, Text, Badge, Button, HStack, VStack } from '@chakra-ui/reac
 import { MdLocationOn, MdCheckCircle } from 'react-icons/md';
 import { useStore } from 'zustand';
 
-export function LocationCard({ location, userPosition, isVisited, visitLocation }) {
+export function LocationCard({ location, userPosition, isVisited, visitLocation, isLoggedIn }) {
 
   const calculateDistance = (userPos, locPos) => {
     if (!userPos) return null;
@@ -88,15 +88,21 @@ export function LocationCard({ location, userPosition, isVisited, visitLocation 
         </Text>
 
         <HStack spacing={2}>
-          <Button
-            colorScheme="brand"
-            size="sm"
-            flex="1"
-            onClick={() => { visitLocation(location.id); }} 
-            isDisabled={isVisited}
-          >
-            {isVisited ? 'Completed' : `Visit (+ ${location.xpReward} XP)`}
-          </Button>
+          {
+            isLoggedIn ? 
+              <Button
+                colorScheme="brand"
+                size="sm"
+                flex="1"
+                onClick={() => { visitLocation(location.id); }} 
+                isDisabled={isVisited}
+              >
+                {isVisited ? 'Completed' : `Visit (+ ${location.xpReward} XP)`}
+              </Button>
+            :
+            ""
+          }
+          
           <Button
             variant="outline"
             size="sm"

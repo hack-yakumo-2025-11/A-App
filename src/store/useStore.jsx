@@ -1389,7 +1389,6 @@ const initialState = {
       dailyMissions: [
         { id: 'mission_001', description: 'Visit 1 location', xpReward: 50, type: "visit", progress: 0, target: 1, completed: false },
         { id: 'mission_002', description: 'Submit a new location', type: "submit", progress: 0, target: 1, xpReward: 30, completed: false },
-        { id: 'mission_003', description: 'Chat with the AI guide 5 times', type:"chat", progress: 0, target: 5, xpReward: 20, completed: false },
       ],
     
       // New state for features
@@ -1398,6 +1397,8 @@ const initialState = {
       currentSearchQuery: '',
       currentSelectedCategory: 'all',
       missionsJustCompleted: [],
+      foundLocationSearchLocation: null,
+      foundLocationFilterAnime: null,
 }
 
 export const useStore = create(
@@ -1466,12 +1467,18 @@ export const useStore = create(
       addToConversationHistory: (message) => set((state) => ({
         conversationHistory: [...state.conversationHistory, message],
       })),
+
+      setFoundLocationSearchLocation: (location) => set({ foundLocationSearchLocation: location }),
+
+      setFoundLocationFilterAnime: (animeName) => set({ foundLocationFilterAnime: animeName }),
       
       clearConversationHistory: () => set({ conversationHistory: [] }),
       
       toggleChatMinimized: () => set((state) => ({
         isChatMinimized: !state.isChatMinimized,
       })),
+
+      
 
       // New actions for user-submitted locations
       addUserLocation: (locationData) => set((state) => {
