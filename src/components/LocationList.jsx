@@ -44,8 +44,6 @@ export function LocationList() {
   // Get unique anime names for stats
   const getFilteredLocations = useStore((state) => state.getFilteredLocations);
   const stateFilteredLocations = getFilteredLocations();
-  const uniqueAnime = [...new Set(locations.map((loc) => loc.anime))];
-  const visitedCount = visitedLocations.length;
 
   // Filter locations
   const filteredLocations = stateFilteredLocations
@@ -55,6 +53,9 @@ export function LocationList() {
       return true;
     });
    
+  const uniqueAnime = [...new Set(stateFilteredLocations.map((loc) => loc.anime))];
+  const visitedCount = visitedLocations.length;
+
   function handleVisitLocation(locationId) {
     visitLocation(locationId);
     const location = useStore.getState().locations.find(loc => loc.id === locationId);
@@ -75,7 +76,7 @@ export function LocationList() {
             {visitedCount}/{locations.length} Visited
           </Badge>
           <Badge colorScheme="purple" fontSize="md" px={3} py={1}>
-            {uniqueAnime.length} Anime
+            {uniqueAnime.length} Properties 
           </Badge>
         </HStack>
 

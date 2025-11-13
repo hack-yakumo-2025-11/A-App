@@ -16,6 +16,8 @@ import {
 } from '@chakra-ui/react';
 import { motion } from 'framer-motion';
 import { useStore } from '../store/useStore';
+import CharacterGrid from '../components/CharacterChatbot/CharacterGrid';
+import { CHARACTER_PERSONALITIES } from '../services/openaiService';
 
 const MotionBox = motion(Box);
 
@@ -37,6 +39,21 @@ export default function Onboarding() {
   const navigate = useNavigate();
   const toast = useToast();
   const setUsername = useStore((state) => state.setUsername);
+  const selectedCharacterId = useStore((state) => state.selectedCharacterId);
+  const setSelectedCharacter = useStore((state) => state.setSelectedCharacter);
+
+  const [previewEmotion, setPreviewEmotion] = useState('default');
+  function handleSelectCharacter (characterId) {
+    setSelectedCharacter(characterId);
+    const characterInfo = CHARACTER_PERSONALITIES[characterId];
+    toast({
+      title: '✨ Character updated!',
+      description: `${characterInfo.name} is now your guide`,
+      status: 'success',
+      duration: 2000,
+      isClosable: true,
+    });
+  };
 
   const [step, setStep] = useState(1);
   const [userName, setUserName] = useState('');
@@ -143,8 +160,39 @@ export default function Onboarding() {
               </VStack>
             </MotionBox>
           )}
+          {
+            step === 2 && (<MotionBox
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              w="100%"
+            >
+              <VStack spacing={6} bg="white" p={8} borderRadius="2xl" boxShadow="xl">
+                <Heading size="lg">What Guide would you preffer?</Heading>
+                <CharacterGrid
+                  selectedCharacterId={selectedCharacterId}
+                  handleSelectCharacter={handleSelectCharacter}
+                  setPreviewEmotion={setPreviewEmotion}
+                  previewEmotion={previewEmotion}
+                ></CharacterGrid>
 
-          {step === 2 && (
+                <HStack w="100%" spacing={3}>
+                  <Button variant="outline" onClick={() => setStep(1)} flex="1">
+                    ← Back
+                  </Button>
+                  <Button
+                  flex={1}
+                  colorScheme="brand"
+                  onClick={() => setStep(3)}
+                >
+                  Continue →
+                </Button>
+                </HStack>
+              </VStack>
+            </MotionBox>
+          ) 
+          }
+
+          {step === 3 && (
             <MotionBox
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}

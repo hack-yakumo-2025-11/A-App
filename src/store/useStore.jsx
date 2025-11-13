@@ -1284,6 +1284,102 @@ const initialState = {
           difficulty: 'Easy',
           category: 'anime'
         },
+        {
+          id: 'loc_105',
+          name: 'Itsukushima Shrine',
+          anime: 'Street Fighter',
+          lat: 34.2958,
+          lng: 132.3197,
+          description: 'Iconic floating torii gate that inspired Ryu\'s stage in Street Fighter Alpha 3',
+          image: 'https://images.unsplash.com/photo-1528164344705-47542687000d?w=400',
+          xpReward: 80,
+          difficulty: 'Hard',
+          category: 'gaming'
+        },
+        {
+          id: 'loc_106',
+          name: 'Hiroshima Peace Memorial Park',
+          anime: 'Metal Gear Solid',
+          lat: 34.3955,
+          lng: 132.4536,
+          description: 'Historic site that inspired the anti-nuclear war themes in the Metal Gear Solid game series',
+          image: 'https://images.unsplash.com/photo-1590559899731-a382839e5549?w=400',
+          xpReward: 75,
+          difficulty: 'Medium',
+          category: 'gaming'
+        },
+        {
+          id: 'loc_107',
+          name: 'Tottori Sand Dunes Conan Airport',
+          anime: 'Detective Conan',
+          lat: 35.5301,
+          lng: 133.2364,
+          description: 'Airport themed after Detective Conan, featuring statues and exhibits of the famous mystery-solving anime',
+          image: 'https://images.unsplash.com/photo-1436491865332-7a61a109cc05?w=400',
+          xpReward: 65,
+          difficulty: 'Medium',
+          category: 'manga'
+        },
+        {
+          id: 'loc_108',
+          name: 'Conan Town Hokuei',
+          anime: 'Detective Conan',
+          lat: 35.4889,
+          lng: 133.5847,
+          description: 'Hometown of Detective Conan creator Gosho Aoyama, with museum and character statues throughout town',
+          image: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400',
+          xpReward: 75,
+          difficulty: 'Hard',
+          category: 'manga'
+        },
+        {
+          id: 'loc_109',
+          name: 'Mizuki Shigeru Road',
+          anime: 'GeGeGe no Kitaro',
+          lat: 35.4333,
+          lng: 133.2333,
+          description: 'Street in Sakaiminato dedicated to yokai manga GeGeGe no Kitaro, featuring bronze statues and themed shops',
+          image: 'https://images.unsplash.com/photo-1480796927426-f609979314bd?w=400',
+          xpReward: 70,
+          difficulty: 'Medium',
+          category: 'manga'
+        },
+        {
+          id: 'loc_110',
+          name: 'Atomic Bomb Dome',
+          anime: 'Barefoot Gen',
+          lat: 34.3955,
+          lng: 132.4536,
+          description: 'UNESCO World Heritage site featured in the anti-war anime film Barefoot Gen depicting WWII Hiroshima',
+          image: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400',
+          xpReward: 85,
+          difficulty: 'Hard',
+          category: 'movies'
+        },
+        {
+          id: 'loc_111',
+          name: 'Tottori Sand Dunes',
+          anime: 'Woman in the Dunes',
+          lat: 35.5419,
+          lng: 134.2258,
+          description: 'Stunning coastal dunes featured in the acclaimed 1964 film Woman in the Dunes',
+          image: 'https://images.unsplash.com/photo-1509316785289-025f5b846b35?w=400',
+          xpReward: 65,
+          difficulty: 'Medium',
+          category: 'movies'
+        },
+        {
+          id: 'loc_112',
+          name: 'Onomichi Temple Walk',
+          anime: 'Tokyo Story',
+          lat: 34.4091,
+          lng: 133.2044,
+          description: 'Hillside temple town featured in Yasujiro Ozu\'s masterpiece Tokyo Story (1953)',
+          image: 'https://images.unsplash.com/photo-1545569341-9eb8b30979d9?w=400',
+          xpReward: 70,
+          difficulty: 'Medium',
+          category: 'movies'
+        }
       ],
       visitedLocations: [],
       selectedCharacterId: 'character_001',
@@ -1383,7 +1479,6 @@ export const useStore = create(
         const newLocation = {
           ...locationData,
           id: `user_${Date.now()}`,
-          category: 'user-submitted',
           xpReward: 25, // Default XP for user-submitted locations
           difficulty: 'Easy',
           submittedBy: state.user.name,
@@ -1391,13 +1486,14 @@ export const useStore = create(
         };
         
         let newXp = state.user.xp; //TODO: consider adding xp for submission
-
+        let newlyCompletedMissions = [];
         state.dailyMissions = state.dailyMissions.map(mission => {
           if (mission.type === "submit" && !mission.completed) {
             const newProgress = mission.progress + 1;
             const isCompleted = newProgress >= mission.target;
             if (isCompleted) {
               newXp += mission.xpReward;
+              newlyCompletedMissions.push(mission.id);
             }
             return {
               ...mission,
@@ -1414,6 +1510,8 @@ export const useStore = create(
 
         return {
           userSubmittedLocations: [...state.userSubmittedLocations, newLocation],
+          justLeveledUp: leveledUp,
+          missionsJustCompleted: [...state.missionsJustCompleted, ...newlyCompletedMissions],
           user: {
             ...state.user,
             xp: newXp,
