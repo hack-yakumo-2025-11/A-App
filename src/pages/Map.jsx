@@ -14,7 +14,7 @@ import {
   useToast,
   Container,
 } from '@chakra-ui/react';
-import { MdArrowBack, MdAddLocation, MdFilterList } from 'react-icons/md';
+import { MdArrowBack, MdAddLocation, MdFilterList, MdPerson2 } from 'react-icons/md';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { LocationMap } from '../components/LocationMap';
 import { LocationList } from '../components/LocationList';
@@ -117,7 +117,7 @@ export default function Map() {
     setSelectedCoordinates(coordinates);
     onOpen();
   };
-
+  const userName = useStore((state) => state.user.name);
   const filteredLocations = getFilteredLocations();
   const currentSearchQuery = useStore((state) => state.currentSearchQuery);
   const setSearchQuery = useStore((state) => state.setSearchQuery);
@@ -128,61 +128,26 @@ export default function Map() {
     <Box h="100vh" display="flex" flexDirection="column">
       {/* Header */}
       <Box bg="white" borderBottomWidth="1px" py={3} px={4} boxShadow="sm">
-        <HStack justify="space-between">
+        <HStack justify="flex-end" pb={2}>
           <HStack>
-            <IconButton
-              icon={<MdArrowBack />}
-              variant="ghost"
-              onClick={() => navigate('/home')}
-              aria-label="Go back"
-            />
-            <VStack align="start" spacing={0}>
-              <Text fontWeight="bold" fontSize="lg">
-                Explore Locations 🗺️
-              </Text>
-              {filteredAnime && (
-                <HStack spacing={2}>
-                  <Badge colorScheme="purple" fontSize="xs">
-                    Filtered: {filteredAnime}
-                  </Badge>
-                  <Button
-                    size="xs"
-                    variant="ghost"
-                    onClick={clearAnimeFilter}
-                  >
-                    Clear
-                  </Button>
-                </HStack>
-              )}
-            </VStack>
-          </HStack>
-
-          <HStack>
-            {/* Location count */}
-            <Badge colorScheme="pink" fontSize="sm" px={2} py={1}>
-              {filteredLocations.length} locations
-            </Badge>
-            
             {/* Add Location Button */}
-            <IconButton
-              icon={<MdAddLocation />}
+            <Button
               colorScheme="pink"
               variant="outline"
+              
               onClick={() => {
                 // Open modal without coordinates for now
-                toast({
-                  title: 'Tap on the map',
-                  description: 'Tap on the map where you want to add a location',
-                  status: 'info',
-                  duration: 3000,
-                });
+                navigate('/Home');
               }}
-              aria-label="Add location"
-            />
+              aria-label="Register"
+            >
+              <MdPerson2/>
+              {
+              userName ? "Home" : "Register"
+            }</Button>
           </HStack>
         </HStack>
         {/* Filter */}
-            
       <Box>
         <SearchInput
           value={currentSearchQuery}
