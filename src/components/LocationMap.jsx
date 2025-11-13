@@ -456,7 +456,10 @@ export function LocationMap() {
             <Marker
               key={location.id}
               position={{ lat: location.lat, lng: location.lng }}
-              onClick={() => setSelectedLocation(location)}
+              onClick={() => {
+                setSelectedLocation(location);
+                if(location.state){ location.state.searchLocation = null; location.state.filterAnime = null;};
+              }}
               title={location.name}
               icon={{
                 path: window.google?.maps?.SymbolPath?.CIRCLE || 0,
@@ -492,7 +495,11 @@ export function LocationMap() {
         {selectedLocation && (
           <InfoWindow
             position={{ lat: selectedLocation.lat, lng: selectedLocation.lng }}
-            onCloseClick={() => setSelectedLocation(null)}
+            onCloseClick={() =>{ 
+              setSelectedLocation(null); 
+              if(location.state){ location.state.searchLocation = null; location.state.filterAnime = null;} 
+            }
+          }
           >
             <VStack align="start" spacing={2} p={2} maxW="280px">
               <Image

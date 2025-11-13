@@ -32,7 +32,7 @@ export default function Checkin() {
   const visitedLocations = useStore((state) => state.visitedLocations);
   const character = useStore((state) => state.character);
   const level = useStore((state) => state.level);
-  const xp = useStore((state) => state.xp);
+  const xp = useStore((state) => state.xp);;
 
   const [photo, setPhoto] = useState(null);
   const [isCheckedIn, setIsCheckedIn] = useState(false);
@@ -81,8 +81,9 @@ export default function Checkin() {
       title: '🎉 Check-in successful!',
       description: `+${location.xpReward} XP earned!`,
       status: 'success',
-      duration: 5000,
+      duration: 3000,
     });
+
 
     // Navigate back after 3 seconds
     setTimeout(() => {

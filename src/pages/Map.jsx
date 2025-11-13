@@ -39,6 +39,10 @@ export default function Map() {
   const filteredAnime = useStore((state) => state.filteredAnime);
   const clearAnimeFilter = useStore((state) => state.clearAnimeFilter);
   const setAnimeFilter = useStore((state) => state.setAnimeFilter);
+  const justLeveledUp = useStore((state) => state.justLeveledUp);
+  const setJustLeveledUp = useStore((state) => state.setJustLeveledUp);
+  const missionsJustCompleted = useStore((state) => state.missionsJustCompleted);
+  const clearMissionsJustCompleted = useStore((state) => state.clearMissionsJustCompleted);
 
   // Handle navigation from AI chatbot
   useEffect(() => {
@@ -79,7 +83,35 @@ export default function Map() {
       
       window.history.replaceState({}, document.title);
     }
-  }, [location.state]);
+
+    // console.log('Missions just completed:', location.state?.missionsJustCompleted);
+
+    missionsJustCompleted.forEach(missionId => {
+      const mission = useStore.getState().dailyMissions.find(m => m.id === missionId);
+      console.log('Completed mission:', mission);
+      if (mission) {
+        toast({
+          title: '🎯 Mission Completed!',
+          description: `You completed the mission: "${mission.description}" and earned +${mission.xpReward} XP!`,
+          status: 'success',
+          duration: 3000,
+        });
+      }
+    });
+    if (missionsJustCompleted.length > 0)  clearMissionsJustCompleted();
+
+    if (justLeveledUp) {
+      const newLevel = useStore.getState().user.level;
+      toast({
+        title: '🚀 Level Up!',
+        description: `Congratulations! You've reached Level ${newLevel}!`,
+        status: 'success',
+        duration: 4000,
+      });
+      setJustLeveledUp(false);
+    }
+
+  }, [location.state, missionsJustCompleted]);
 
   const handleMapClick = (coordinates) => {
     setSelectedCoordinates(coordinates);

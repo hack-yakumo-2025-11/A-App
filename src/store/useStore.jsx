@@ -1289,19 +1289,19 @@ const initialState = {
       selectedCharacterId: 'character_001',
       conversationHistory: [],
       isChatMinimized: false,
-      
+      justLeveledUp: false,
       dailyMissions: [
-        { id: 'mission_001', description: 'Visit 1', xpReward: 50, completed: false },
-        { id: 'mission_002', description: 'Submit a new location', xpReward: 30, completed: false },
-        { id: 'mission_003', description: 'Chat with the AI guide 5 times', xpReward: 20, completed: false },
+        { id: 'mission_001', description: 'Visit 1 location', xpReward: 50, type: "visit", progress: 0, target: 1, completed: false },
+        { id: 'mission_002', description: 'Submit a new location', type: "submit", progress: 0, target: 1, xpReward: 30, completed: false },
+        { id: 'mission_003', description: 'Chat with the AI guide 5 times', type:"chat", progress: 0, target: 5, xpReward: 20, completed: false },
       ],
     
-
       // New state for features
       userSubmittedLocations: [],
       currentAnimeFilter: null,
       currentSearchQuery: '',
       currentSelectedCategory: 'all',
+      missionsJustCompleted: [],
 }
 
 export const useStore = create(
@@ -1319,11 +1319,35 @@ export const useStore = create(
         
         if (!location) return state;
 
-        const newXp = state.user.xp + location.xpReward;
+        let newXp = state.user.xp + location.xpReward;
+        let newlyCompletedMissions = []
+
+        let newdailyMissions = state.dailyMissions.map(mission => {
+          if (mission.type === "visit" && !mission.completed) {
+            const newProgress = mission.progress + 1; 
+            const isCompleted = newProgress >= mission.target;
+            if (isCompleted) {
+              newXp += mission.xpReward;
+              newlyCompletedMissions.push(mission.id);
+            } 
+            return {
+              ...mission,
+              progress: newProgress, 
+              completed: isCompleted,
+            };
+          }
+          return mission;
+        });
+            
+        console.log("Mission completed:", newlyCompletedMissions);
+        
         const newLevel = Math.floor(newXp / 100) + 1;
         
         return {
           visitedLocations: [...state.visitedLocations, locationId],
+          dailyMissions: newdailyMissions,
+          justLeveledUp: newLevel > state.user.level,
+          missionsJustCompleted: [...state.missionsJustCompleted, ...newlyCompletedMissions],
           user: {
             ...state.user,
             xp: newXp,
@@ -1333,9 +1357,13 @@ export const useStore = create(
         };
       }),
 
-      setInitialState: () => set(() => initialState),
+      clearMissionsJustCompleted: () => set({ missionsJustCompleted: [] }),
 
-      setUser: (username) => set((state)=>({user:{...state.user, name: username}})),
+      setInitialState: () => set(() => initialState),
+      
+      setJustLeveledUp: (value) => set({ justLeveledUp: value }),
+
+      setUsername: (username) => set((state)=>({user:{...state.user, name: username}})),
 
       setSelectedCharacter: (characterId) => set({ selectedCharacterId: characterId }),
       
@@ -1351,6 +1379,7 @@ export const useStore = create(
 
       // New actions for user-submitted locations
       addUserLocation: (locationData) => set((state) => {
+
         const newLocation = {
           ...locationData,
           id: `user_${Date.now()}`,
@@ -1361,8 +1390,35 @@ export const useStore = create(
           submittedAt: new Date().toISOString(),
         };
         
+        let newXp = state.user.xp; //TODO: consider adding xp for submission
+
+        state.dailyMissions = state.dailyMissions.map(mission => {
+          if (mission.type === "submit" && !mission.completed) {
+            const newProgress = mission.progress + 1;
+            const isCompleted = newProgress >= mission.target;
+            if (isCompleted) {
+              newXp += mission.xpReward;
+            }
+            return {
+              ...mission,
+              progress: newProgress,
+              completed: isCompleted,
+            };
+          }
+          return mission;
+        });
+
+        const newLevel = Math.floor(newXp / 100) + 1;
+        
+        const leveledUp = newLevel > state.user.level;
+
         return {
           userSubmittedLocations: [...state.userSubmittedLocations, newLocation],
+          user: {
+            ...state.user,
+            xp: newXp,
+            level: newLevel,
+          },
         };
       }),
 

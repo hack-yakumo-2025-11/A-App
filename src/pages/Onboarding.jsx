@@ -36,7 +36,7 @@ const fandoms = [
 export default function Onboarding() {
   const navigate = useNavigate();
   const toast = useToast();
-  const setUser = useStore((state) => state.setUser);
+  const setUsername = useStore((state) => state.setUsername);
   const setCharacter = useStore((state) => state.setCharacter);
 
   const [step, setStep] = useState(1);
@@ -64,7 +64,7 @@ export default function Onboarding() {
     }
 
     // Save user data
-    setUser(
+    setUsername(
       userName
     );
   

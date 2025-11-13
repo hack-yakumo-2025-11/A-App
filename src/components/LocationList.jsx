@@ -11,6 +11,7 @@ import {
   Input,
   InputGroup,
   InputLeftElement,
+  useToast,
 } from '@chakra-ui/react';
 import { MdSearch } from 'react-icons/md';
 import { useStore } from '../store/useStore';
@@ -23,6 +24,7 @@ export function LocationList() {
   const [userPosition, setUserPosition] = useState(null);
   const [filter, setFilter] = useState('all');
   const visitLocation = useStore((state) => state.visitLocation);
+  const toast = useToast();
 
   useEffect(() => {
     navigator.geolocation.getCurrentPosition(
@@ -52,7 +54,17 @@ export function LocationList() {
       if (filter === 'unvisited') return !visitedLocations.includes(loc.id);
       return true;
     });
-    
+   
+  function handleVisitLocation(locationId) {
+    visitLocation(locationId);
+    const location = useStore.getState().locations.find(loc => loc.id === locationId);
+    toast({
+        title: '🎉 Location visited!',
+        description: `+${location.xpReward} XP earned`,
+        status: 'success',
+        duration: 3000,
+      });
+  }
 
   return (
     <Container maxW="container.md" py={4} overflow={'auto'}>
@@ -87,7 +99,7 @@ export function LocationList() {
                 location={location}
                 userPosition={userPosition}
                 isVisited={visitedLocations.includes(location.id)}
-                visitLocation={visitLocation}
+                visitLocation={handleVisitLocation}
               />
             ))}
           </SimpleGrid>

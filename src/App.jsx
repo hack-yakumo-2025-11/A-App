@@ -20,7 +20,7 @@ export default function App() {
         <Routes>
           <Route 
             path="/" 
-            element={character ? <Navigate to="/home" /> : <Onboarding />} 
+            element={character ? <Navigate to="/map" /> : <Onboarding />} 
           />
           <Route 
             path="/character-selection" 
