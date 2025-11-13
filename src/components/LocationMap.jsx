@@ -26,11 +26,13 @@ import {
   useDisclosure,
   IconButton,
   Tooltip,
+  Select,
 } from '@chakra-ui/react';
 import { AddIcon, CloseIcon } from '@chakra-ui/icons';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useStore } from '../store/useStore';
 import { SearchInput } from './SearchInput';
+import { MdDelete, MdFileUpload } from 'react-icons/md';
 
 export function LocationMap() {
   const navigate = useNavigate();
@@ -50,7 +52,6 @@ export function LocationMap() {
   const searchProcessedRef = useRef(false);
   
   const { isOpen, onOpen, onClose } = useDisclosure();
-  
   const visitedLocations = useStore((state) => state.visitedLocations);
   const visitLocation = useStore((state) => state.visitLocation);
   const addUserLocation = useStore((state) => state.addUserLocation);
@@ -59,6 +60,45 @@ export function LocationMap() {
   const clearAnimeFilter = useStore((state) => state.clearAnimeFilter);
   
   const filteredLocations = getFilteredLocations();
+
+
+
+ const fileInputRef = useRef(null);
+ const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      if (file.size > 5 * 1024 * 1024) {
+        toast({
+          title: 'Image too large',
+          description: 'Please select an image smaller than 5MB',
+          status: 'error',
+          duration: 3000,
+        });
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setFormData(prev => ({
+          ...prev,
+          image: reader.result,
+          imagePreview: reader.result,
+        }));
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+  const handleRemoveImage = () => {
+    setFormData(prev => ({
+      ...prev,
+      image: null,
+      imagePreview: null,
+    }));
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
 
   // Debug logging for filtered locations
   useEffect(() => {
@@ -285,9 +325,11 @@ export function LocationMap() {
     setFormData({
       name: '',
       anime: '',
+      category: '',
       description: '',
       comment: '',
-      image: '',
+      image: null,
+      imagePreview: null,
     });
     setNewLocationCoords(null);
     setIsAddingLocation(false);
@@ -526,11 +568,6 @@ export function LocationMap() {
                     ✓ Visited
                   </Badge>
                 )}
-                {selectedLocation.category === 'user-submitted' && (
-                  <Badge colorScheme="purple" fontSize="xs">
-                    👥 Community
-                  </Badge>
-                )}
               </HStack>
 
               <Text fontWeight="bold" fontSize="md">
@@ -633,6 +670,21 @@ export function LocationMap() {
               </FormControl>
 
               <FormControl isRequired>
+                <FormLabel fontWeight="bold">Category</FormLabel>
+                <Select
+                placeholder="Select category"
+                value={formData.category}
+                onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                >
+                  {CATEGORIES.filter(cat => cat.id !== 'all').map((cat) => (
+                    <option key={cat.id} value={cat.id}>
+                      {cat.icon} {cat.name}
+                    </option>
+                  ))}
+                </Select>
+              </FormControl>
+
+              <FormControl isRequired>
                 <FormLabel fontWeight="bold">Description</FormLabel>
                 <Textarea
                   placeholder="Describe what makes this location special and how it relates to the anime..."
@@ -655,11 +707,59 @@ export function LocationMap() {
 
               <FormControl>
                 <FormLabel fontWeight="bold">Image URL (Optional)</FormLabel>
-                <Input
+                {/* <Input
                   placeholder="https://example.com/image.jpg"
                   value={formData.image}
                   onChange={(e) => setFormData({ ...formData, image: e.target.value })}
+                /> */}
+                <input
+                  type="file"
+                  accept="image/*"
+                  ref={fileInputRef}
+                  onChange={handleImageChange}
+                  style={{ display: 'none' }}
                 />
+                
+                {!formData.imagePreview ? (
+                  <Button
+                    leftIcon={<MdFileUpload />}
+                    variant="outline"
+                    colorScheme="pink"
+                    onClick={() => fileInputRef.current?.click()}
+                    w="full"
+                    size="lg"
+                    h="auto"
+                    py={4}
+                  >
+                    <VStack spacing={1}>
+                      <Text>Click to upload image</Text>
+                      <Text fontSize="xs" color="gray.500">
+                        Max size: 5MB
+                      </Text>
+                    </VStack>
+                  </Button>
+                ) : (
+                  <Box position="relative" borderRadius="md" overflow="hidden">
+                    <Image
+                      src={formData.imagePreview}
+                      alt="Preview"
+                      maxH="250px"
+                      w="full"
+                      objectFit="cover"
+                    />
+                    <Button
+                      position="absolute"
+                      top={2}
+                      right={2}
+                      size="sm"
+                      colorScheme="red"
+                      leftIcon={<MdDelete />}
+                      onClick={handleRemoveImage}
+                    >
+                      Remove
+                    </Button>
+                  </Box>
+                )}
                 <Text fontSize="xs" color="gray.500" mt={1}>
                   Leave empty to use a default image
                 </Text>

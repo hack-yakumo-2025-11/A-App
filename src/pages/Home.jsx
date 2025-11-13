@@ -214,7 +214,11 @@ export default function Home() {
               size="lg"
               w="100%"
               variant="ghost"
-              onClick={() => setInitialState()}
+              onClick={() => {
+                  navigate('/');
+                  setInitialState()
+                }
+              }
               _hover={{ bg: 'gray.100' }}
             >
               Logout
