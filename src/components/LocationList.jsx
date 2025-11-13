@@ -11,17 +11,20 @@ import {
   Input,
   InputGroup,
   InputLeftElement,
+  useToast,
 } from '@chakra-ui/react';
 import { MdSearch } from 'react-icons/md';
 import { useStore } from '../store/useStore';
 import { LocationCard } from './LocationCard';
+import { SearchInput } from './SearchInput';
 
 export function LocationList() {
   const locations = useStore((state) => state.locations);
   const visitedLocations = useStore((state) => state.visitedLocations);
   const [userPosition, setUserPosition] = useState(null);
   const [filter, setFilter] = useState('all');
-  const [searchQuery, setSearchQuery] = useState('');
+  const visitLocation = useStore((state) => state.visitLocation);
+  const toast = useToast();
 
   useEffect(() => {
     navigator.geolocation.getCurrentPosition(
@@ -37,27 +40,34 @@ export function LocationList() {
     );
   }, []);
 
+
+  // Get unique anime names for stats
+  const getFilteredLocations = useStore((state) => state.getFilteredLocations);
+  const stateFilteredLocations = getFilteredLocations();
+  const uniqueAnime = [...new Set(locations.map((loc) => loc.anime))];
+  const visitedCount = visitedLocations.length;
+
   // Filter locations
-  const filteredLocations = locations
+  const filteredLocations = stateFilteredLocations
     .filter((loc) => {
       if (filter === 'visited') return visitedLocations.includes(loc.id);
       if (filter === 'unvisited') return !visitedLocations.includes(loc.id);
       return true;
-    })
-    .filter((loc) => {
-      if (!searchQuery) return true;
-      return (
-        loc.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        loc.anime.toLowerCase().includes(searchQuery.toLowerCase())
-      );
     });
-
-  // Get unique anime names for stats
-  const uniqueAnime = [...new Set(locations.map((loc) => loc.anime))];
-  const visitedCount = visitedLocations.length;
+   
+  function handleVisitLocation(locationId) {
+    visitLocation(locationId);
+    const location = useStore.getState().locations.find(loc => loc.id === locationId);
+    toast({
+        title: '🎉 Location visited!',
+        description: `+${location.xpReward} XP earned`,
+        status: 'success',
+        duration: 3000,
+      });
+  }
 
   return (
-    <Container maxW="container.md" py={4}>
+    <Container maxW="container.md" py={4} overflow={'auto'}>
       <VStack spacing={6} align="stretch">
         {/* Stats */}
         <HStack spacing={4} justify="center">
@@ -68,18 +78,6 @@ export function LocationList() {
             {uniqueAnime.length} Anime
           </Badge>
         </HStack>
-
-        {/* Search */}
-        <InputGroup>
-          <InputLeftElement pointerEvents="none">
-            <MdSearch color="gray" />
-          </InputLeftElement>
-          <Input
-            placeholder="Search locations or anime..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
-        </InputGroup>
 
         {/* Filter */}
         <Select value={filter} onChange={(e) => setFilter(e.target.value)}>
@@ -101,6 +99,7 @@ export function LocationList() {
                 location={location}
                 userPosition={userPosition}
                 isVisited={visitedLocations.includes(location.id)}
+                visitLocation={handleVisitLocation}
               />
             ))}
           </SimpleGrid>

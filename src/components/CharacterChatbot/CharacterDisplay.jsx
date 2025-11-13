@@ -1,5 +1,5 @@
-import React from 'react';
-import { View, Image, StyleSheet } from 'react-native';
+// import React from 'react';
+import { View, Image, StyleSheet } from 'react';
 
 // For now, using placeholder images. You'll replace with actual character sprites
 const CHARACTER_IMAGES = {

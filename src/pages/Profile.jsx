@@ -13,22 +13,25 @@ import {
   SimpleGrid,
   Divider,
   Avatar,
+  Image,
 } from '@chakra-ui/react';
 import { MdArrowBack, MdLogout } from 'react-icons/md';
 import { useStore } from '../store/useStore';
 import { Character } from '../components/Character';
+import { getCharacterImage } from '../utils/characterAssets';
 
 export default function Profile() {
   const navigate = useNavigate();
   
   const user = useStore((state) => state.user);
   const character = useStore((state) => state.character);
-  const level = useStore((state) => state.level);
-  const xp = useStore((state) => state.xp);
+  const level = useStore((state) => state.user.level);
+  const xp = useStore((state) => state.user.xp);
   const visitedLocations = useStore((state) => state.visitedLocations);
   const locations = useStore((state) => state.locations);
   const achievements = useStore((state) => state.achievements);
   const dailyMissions = useStore((state) => state.dailyMissions);
+  const selectedCharacterId = useStore((state) => state.selectedCharacterId);
 
   const xpProgress = xp % 100;
   const xpForNextLevel = 100;
@@ -94,18 +97,12 @@ export default function Profile() {
               <Text fontWeight="bold" fontSize="lg">
                 Your Companion
               </Text>
-              <Character
-                name={character?.name}
-                emotion="happy"
-                message={`We've explored ${visitedLocations.length} places together! 🌟`}
+              <Image
+                src={getCharacterImage(selectedCharacterId, 'default')}
+                boxSize="100%"
+                objectFit="cover"
+                fallbackSrc="https://via.placeholder.com/50"
               />
-              <HStack spacing={2}>
-                {character?.fandoms?.map((fandom) => (
-                  <Badge key={fandom} colorScheme="pink">
-                    {fandom}
-                  </Badge>
-                ))}
-              </HStack>
             </VStack>
           </Box>
 
@@ -161,14 +158,14 @@ export default function Profile() {
                     Anime Series
                   </Text>
                 </Box>
-                <Box textAlign="center" p={4} bg="green.50" borderRadius="lg">
+                {/* <Box textAlign="center" p={4} bg="green.50" borderRadius="lg">
                   <Text fontSize="3xl" fontWeight="bold" color="green.600">
                     {achievements.length}
                   </Text>
                   <Text fontSize="sm" color="gray.600">
                     Achievements
                   </Text>
-                </Box>
+                </Box> */}
               </SimpleGrid>
             </VStack>
           </Box>
@@ -215,7 +212,7 @@ export default function Profile() {
           </Box>
 
           {/* Achievements */}
-          {achievements.length > 0 && (
+          {/* {achievements.length > 0 && (
             <Box bg="white" p={6} borderRadius="xl" w="100%" boxShadow="md">
               <VStack spacing={4} align="stretch">
                 <Heading size="md">Achievements 🏆</Heading>
@@ -245,7 +242,7 @@ export default function Profile() {
                 </SimpleGrid>
               </VStack>
             </Box>
-          )}
+          )} */}
         </VStack>
       </Container>
     </Box>
